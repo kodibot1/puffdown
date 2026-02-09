@@ -811,7 +811,7 @@
       // ── Screen 3: Vape Type ──
       function VapeTypeScreen() {
         const types = [
-          { key: 'disposable', emoji: '🚬', label: 'Disposable' },
+          { key: 'disposable', emoji: '🌀', label: 'Disposable' },
           { key: 'pod', emoji: '💨', label: 'Pod System' },
           { key: 'mod', emoji: '🔋', label: 'Box Mod' },
           { key: 'multiple', emoji: '🔀', label: 'Multiple Devices' }
@@ -911,33 +911,78 @@
         );
       }
 
-      // ── Screen 6: Weekly Spend (slider) ──
+      // ── Screen 6: Spend (slider with period toggle) ──
       function WeeklySpendScreen() {
+        const [period, setPeriod] = useState(data.spendPeriod || 'every2weeks');
         const spend = typeof data.weeklySpend === 'number' ? data.weeklySpend : 30;
+
+        const periodConfig = {
+          week: { label: 'Weekly', min: 5, max: 100, step: 5, toWeekly: v => v },
+          every2weeks: { label: 'Every 2 weeks', min: 10, max: 150, step: 5, toWeekly: v => Math.round(v / 2) },
+          month: { label: 'Monthly', min: 15, max: 300, step: 5, toWeekly: v => Math.round(v / 4.33) }
+        };
+        const cfg = periodConfig[period];
+        const rawSpend = data.spendRaw || (period === 'every2weeks' ? spend * 2 : period === 'month' ? Math.round(spend * 4.33) : spend);
+        const weeklyCalc = cfg.toWeekly(rawSpend);
+        const clampedRaw = Math.max(cfg.min, Math.min(cfg.max, rawSpend));
+
+        const handlePeriodChange = (newPeriod) => {
+          setPeriod(newPeriod);
+          update('spendPeriod', newPeriod);
+          // Reset raw spend to a reasonable default for the new period
+          const defaults = { week: 25, every2weeks: 40, month: 100 };
+          const newRaw = defaults[newPeriod];
+          setData(prev => ({ ...prev, spendRaw: newRaw, weeklySpend: periodConfig[newPeriod].toWeekly(newRaw) }));
+        };
+
+        const handleSlide = (val) => {
+          const num = Number(val);
+          setData(prev => ({ ...prev, spendRaw: num, weeklySpend: cfg.toWeekly(num) }));
+        };
+
         return (
           <div className="screen" key="s6">
             <ProgressBar current={6} total={20} />
-            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How much do you spend per week?</h2>
-            <p className="text-muted mb-32" style={{ fontSize: 14 }}>We use this to calculate your savings.</p>
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How much do you spend on vaping?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>We use this to calculate your savings.</p>
+
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+              {Object.entries(periodConfig).map(([key, val]) => (
+                <button
+                  key={key}
+                  onClick={() => handlePeriodChange(key)}
+                  style={{
+                    flex: 1, padding: '10px 4px', borderRadius: 12,
+                    border: period === key ? '2px solid var(--primary)' : '1.5px solid var(--card-border)',
+                    background: period === key ? 'var(--primary-dim)' : 'var(--card)',
+                    color: period === key ? 'var(--primary)' : 'var(--subtext)',
+                    fontSize: 13, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer'
+                  }}
+                >{val.label}</button>
+              ))}
+            </div>
+
             <div className="text-center mb-16">
               <span style={{ fontSize: 56, fontWeight: 700, color: 'var(--gold)' }}>
-                ${spend}
+                ${clampedRaw}
               </span>
               <br />
-              <span className="text-muted" style={{ fontSize: 15 }}>per week on vaping</span>
+              <span className="text-muted" style={{ fontSize: 15 }}>
+                {period === 'week' ? 'per week' : period === 'every2weeks' ? 'every 2 weeks' : 'per month'}
+              </span>
             </div>
             <input
               type="range"
-              min={5} max={100} step={5}
-              value={spend}
-              onChange={e => update('weeklySpend', Number(e.target.value))}
+              min={cfg.min} max={cfg.max} step={cfg.step}
+              value={clampedRaw}
+              onChange={e => handleSlide(e.target.value)}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-              <span className="text-muted" style={{ fontSize: 13 }}>$5</span>
-              <span className="text-muted" style={{ fontSize: 13 }}>$100</span>
+              <span className="text-muted" style={{ fontSize: 13 }}>${cfg.min}</span>
+              <span className="text-muted" style={{ fontSize: 13 }}>${cfg.max}</span>
             </div>
             <p className="text-muted text-center mb-32" style={{ fontSize: 13 }}>
-              That's <span style={{ color: 'var(--gold)', fontWeight: 600 }}>${spend * 52}</span> per year
+              That's <span style={{ color: 'var(--gold)', fontWeight: 600 }}>${weeklyCalc * 52}</span> per year
             </p>
             <div className="spacer" />
             <button className="btn btn-primary" onClick={next}>Continue</button>
