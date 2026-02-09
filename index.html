@@ -875,13 +875,22 @@
         }
         const saved = Math.round(totalPuffsAvoided * costPerPuff * 100) / 100;
 
-        const logPuff = () => {
+        const logPuff = useCallback(() => {
           setData(prev => {
             const logs = { ...prev.puffLogs } || {};
             logs[today] = (logs[today] || 0) + 1;
             return { ...prev, puffLogs: logs, startDate: prev.startDate || today };
           });
-        };
+        }, [today]);
+
+        // Auto-log from shortcut (?action=log)
+        useEffect(() => {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('action') === 'log') {
+            logPuff();
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+        }, [logPuff]);
 
         const resetOnboarding = () => {
           const fresh = {

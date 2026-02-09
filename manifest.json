@@ -8,6 +8,15 @@
   "background_color": "#0D1117",
   "theme_color": "#0D1117",
   "orientation": "portrait",
+  "shortcuts": [
+    {
+      "name": "Log a Puff",
+      "short_name": "Puff",
+      "description": "Quickly log a puff",
+      "url": "./index.html?action=log",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
