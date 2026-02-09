@@ -1,10 +1,12 @@
-const CACHE_NAME = 'puffdown-v4';
+const CACHE_NAME = 'puffdown-v6';
 const ASSETS = [
   './',
   './index.html',
+  './widget.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './vape-icon.png',
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
   'https://unpkg.com/@babel/standalone/babel.min.js'

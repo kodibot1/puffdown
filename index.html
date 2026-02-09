@@ -22,6 +22,7 @@
       --gold: #FBBF24;
       --gold-dim: rgba(251,191,36,0.12);
       --coral: #F87171;
+      --coral-dim: rgba(248,113,113,0.12);
       --text: #FFFFFF;
       --subtext: #9CA3AF;
       --dark-grey: #6B7280;
@@ -59,16 +60,21 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.05); }
     }
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      60% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
 
-    /* Progress bar */
+    /* Progress bar (green gradient, Clear30-inspired) */
     .progress-bar-container {
-      width: 100%; height: 4px;
-      background: var(--card-border); border-radius: 2px;
+      width: 100%; height: 6px;
+      background: var(--card-border); border-radius: 3px;
       margin-bottom: 32px;
     }
     .progress-bar-fill {
-      height: 100%; border-radius: 2px;
-      background: var(--primary);
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, #2DD4BF, #86EFAC);
       transition: width 0.4s ease;
     }
 
@@ -112,6 +118,7 @@
     .option-card.selected {
       border-color: var(--primary);
       border-width: 2px;
+      background: var(--primary-dim);
     }
     .option-card.selected .label { color: var(--primary); }
     .option-card .emoji { font-size: 28px; flex-shrink: 0; }
@@ -119,6 +126,35 @@
       font-size: 15px; font-weight: 500;
       transition: color 0.15s;
     }
+
+    /* Multi-select card (allows up to 3) */
+    .multi-select-card {
+      background: var(--card); border: 1.5px solid var(--card-border);
+      border-radius: 14px; padding: 14px 16px;
+      cursor: pointer; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .multi-select-card:active { transform: scale(0.98); }
+    .multi-select-card.selected {
+      border-color: var(--primary);
+      border-width: 2px;
+      background: var(--primary-dim);
+    }
+    .multi-select-card .ms-check {
+      width: 24px; height: 24px; border-radius: 8px;
+      border: 2px solid var(--card-border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.15s;
+      font-size: 13px; color: transparent;
+    }
+    .multi-select-card.selected .ms-check {
+      background: var(--primary); border-color: var(--primary);
+      color: #fff;
+    }
+    .multi-select-card .emoji { font-size: 24px; flex-shrink: 0; }
+    .multi-select-card .label { font-size: 15px; font-weight: 500; }
+    .multi-select-card.selected .label { color: var(--primary); }
 
     /* Option grid (2x2) */
     .option-grid {
@@ -134,6 +170,37 @@
 
     /* Option stack */
     .option-stack { display: flex; flex-direction: column; gap: 12px; }
+
+    /* Multi-select grid */
+    .multi-select-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .multi-select-grid .multi-select-card {
+      flex-direction: column; text-align: center;
+      padding: 16px 10px; gap: 8px;
+    }
+    .multi-select-grid .multi-select-card .ms-check {
+      position: absolute; top: 8px; right: 8px;
+      width: 20px; height: 20px; border-radius: 6px;
+    }
+    .multi-select-grid .multi-select-card {
+      position: relative;
+    }
+    .multi-select-grid .multi-select-card .emoji { font-size: 28px; }
+    .multi-select-grid .multi-select-card .label { font-size: 13px; }
+
+    /* Name input */
+    .name-input {
+      width: 100%; height: 56px;
+      background: var(--card); border: 1.5px solid var(--card-border);
+      border-radius: 16px; padding: 0 20px;
+      font-family: inherit; font-size: 17px; font-weight: 500;
+      color: var(--text); outline: none;
+      transition: border-color 0.2s;
+    }
+    .name-input::placeholder { color: var(--dark-grey); }
+    .name-input:focus { border-color: var(--primary); }
 
     /* Range slider */
     input[type="range"] {
@@ -151,6 +218,71 @@
       width: 28px; height: 28px;
       background: var(--primary); border-radius: 50%;
       cursor: pointer; border: 3px solid var(--bg);
+    }
+
+    /* Emoji slider (life impact) */
+    .emoji-slider-face {
+      font-size: 64px; text-align: center;
+      transition: all 0.2s;
+    }
+    .emoji-slider-labels {
+      display: flex; justify-content: space-between;
+      font-size: 13px; color: var(--subtext);
+    }
+
+    /* Snapshot visualization bars */
+    .snapshot-bar-container {
+      margin-bottom: 20px;
+    }
+    .snapshot-bar-label {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 8px;
+    }
+    .snapshot-bar-label .bar-title {
+      font-size: 14px; font-weight: 600;
+    }
+    .snapshot-bar-label .bar-value {
+      font-size: 14px; font-weight: 700;
+    }
+    .snapshot-bar {
+      width: 100%; height: 12px;
+      background: var(--card-border); border-radius: 6px;
+      overflow: hidden;
+    }
+    .snapshot-bar-fill {
+      height: 100%; border-radius: 6px;
+      transition: width 1.2s ease-out;
+    }
+    .snapshot-bar-fill.red { background: linear-gradient(90deg, #F87171, #EF4444); }
+    .snapshot-bar-fill.orange { background: linear-gradient(90deg, #FBBF24, #F59E0B); }
+    .snapshot-bar-fill.green { background: linear-gradient(90deg, #2DD4BF, #86EFAC); }
+
+    /* Comparison bars */
+    .comparison-bar-wrapper {
+      margin-bottom: 16px;
+    }
+    .comparison-bar-label {
+      font-size: 14px; font-weight: 500; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .comparison-bar-track {
+      width: 100%; height: 28px;
+      background: var(--card-border); border-radius: 14px;
+      overflow: hidden; position: relative;
+    }
+    .comparison-bar-value {
+      height: 100%; border-radius: 14px;
+      display: flex; align-items: center;
+      padding: 0 12px; font-size: 12px; font-weight: 700;
+      transition: width 1.2s ease-out;
+      min-width: 40px;
+    }
+    .comparison-bar-value.green { background: linear-gradient(90deg, #2DD4BF, #86EFAC); color: #0D1117; }
+    .comparison-bar-value.red { background: linear-gradient(90deg, #F87171, #EF4444); color: #fff; }
+
+    /* Green gradient background for transition screens */
+    .screen-gradient {
+      background: linear-gradient(180deg, rgba(45,212,191,0.08) 0%, var(--bg) 60%);
     }
 
     /* Progress ring (SVG) */
@@ -245,6 +377,14 @@
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; color: var(--primary); flex-shrink: 0;
       font-size: 16px;
+    }
+
+    /* Goal chip (for personalized screens) */
+    .goal-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--primary-dim); border: 1px solid rgba(45,212,191,0.2);
+      border-radius: 12px; padding: 10px 16px;
+      font-size: 14px; font-weight: 500; color: var(--primary);
     }
 
     /* Links */
@@ -354,6 +494,22 @@
       border: 1px solid rgba(45,212,191,0.2);
       border-radius: 16px; padding: 16px;
     }
+
+    /* Mock notification */
+    .mock-notif {
+      background: #1C1C1E; border-radius: 16px; padding: 14px 16px;
+      display: flex; align-items: flex-start; gap: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .mock-notif-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--primary-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .mock-notif-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .mock-notif-body { font-size: 13px; color: var(--subtext); }
+    .mock-notif-time { font-size: 11px; color: var(--dark-grey); margin-left: auto; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -381,7 +537,6 @@
     // ── Count-up animation hook ──
     function useCountUp(target, duration = 1500, delay = 0) {
       const [value, setValue] = useState(0);
-      const ref = useRef();
 
       useEffect(() => {
         let start = null;
@@ -409,12 +564,31 @@
       return value;
     }
 
-    // ── Spend ranges → midpoint weekly $ ──
+    // ── Spend ranges → midpoint weekly $ (legacy migration) ──
     const SPEND_MAP = {
       under_15: 10,
       '15_30': 22.5,
       '30_50': 40,
       '50_plus': 65
+    };
+
+    // ── Get weekly spend as a number (handles old string format + new number format) ──
+    function getWeeklySpendNum(weeklySpend) {
+      if (typeof weeklySpend === 'number') return weeklySpend;
+      if (typeof weeklySpend === 'string') return SPEND_MAP[weeklySpend] || 22.5;
+      return 22.5;
+    }
+
+    // ── Goal emoji map ──
+    const GOAL_EMOJIS = {
+      'Breathe easier': '🫁',
+      'Save money': '💰',
+      'Break the addiction': '💪',
+      'Mental clarity': '🧠',
+      'Better fitness': '🏃',
+      'Improve relationships': '❤️',
+      'Feel in control': '🎯',
+      'Better sleep': '😴'
     };
 
     // ── Health recovery timeline ──
@@ -476,17 +650,27 @@
       { title: 'Reminder', body: 'Don\'t forget to track — awareness is power.' }
     ];
 
+    // ── Onboarding total screens (0-20), main app = 21 ──
+    const TOTAL_ONBOARDING_SCREENS = 21;
+
     // ── App ──
     function App() {
       const saved = loadData();
       const [screen, setScreen] = useState(
-        saved && saved.onboardingComplete ? 11 : 0
+        saved && saved.onboardingComplete ? TOTAL_ONBOARDING_SCREENS : 0
       );
       const [data, setData] = useState({
+        userName: '',
+        goals: [],
+        longTermGoal: null,
         vapeType: null,
         dailyPuffs: 150,
-        weeklySpend: null,
+        vapingDuration: null,
+        weeklySpend: 30,
+        lifeImpact: 3,
+        triggers: [],
         biggestStruggle: null,
+        quitAttempts: null,
         onboardingComplete: false,
         ...(saved || {})
       });
@@ -496,41 +680,147 @@
       const update = (key, val) => setData(prev => ({ ...prev, [key]: val }));
       const next = () => setScreen(s => s + 1);
 
-      // ── Screen 0: Welcome ──
-      function WelcomeScreen() {
+      // Helper: toggle item in array (max items)
+      const toggleArrayItem = (key, item, max) => {
+        setData(prev => {
+          const arr = prev[key] || [];
+          if (arr.includes(item)) {
+            return { ...prev, [key]: arr.filter(x => x !== item) };
+          }
+          if (arr.length >= max) return prev;
+          return { ...prev, [key]: [...arr, item] };
+        });
+      };
+
+      // Helper: display name or fallback
+      const displayName = data.userName ? data.userName.split(' ')[0] : '';
+
+      // ── Progress bar helper ──
+      function ProgressBar({ current, total }) {
+        const pct = Math.round((current / total) * 100);
         return (
-          <div className="screen" key={0}>
-            <div className="spacer" />
-            <div className="text-center mb-32">
-              <div style={{ fontSize: 80, marginBottom: 24 }}>🫁</div>
-              <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12, lineHeight: 1.1 }}>
-                Ready to take control?
-              </h1>
-              <p className="text-muted" style={{ fontSize: 15, lineHeight: 1.3 }}>
-                PuffDown helps you quit vaping with a personalized plan backed by science.
-              </p>
-            </div>
-            <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Let's Go</button>
+          <div className="progress-bar-container">
+            <div className="progress-bar-fill" style={{ width: pct + '%' }} />
           </div>
         );
       }
 
-      // ── Screen 1: Vape Type ──
+      // ════════════════════════════════════════
+      // PHASE 1: PINPOINT THE PROBLEM (0-10)
+      // ════════════════════════════════════════
+
+      // ── Screen 0: Welcome ──
+      function WelcomeScreen() {
+        return (
+          <div className="screen" key="s0">
+            <div className="spacer" />
+            <div className="text-center mb-32">
+              <div style={{ fontSize: 80, marginBottom: 24 }}>🫁</div>
+              <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12, lineHeight: 1.1 }}>
+                Ready to quit vaping?
+              </h1>
+              <p className="text-muted" style={{ fontSize: 15, lineHeight: 1.4, marginBottom: 32 }}>
+                Let's build a plan that actually works for you
+              </p>
+              <input
+                className="name-input"
+                type="text"
+                placeholder="What's your name?"
+                value={data.userName}
+                onChange={e => update('userName', e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next} disabled={!data.userName.trim()}>
+              Let's Go
+            </button>
+          </div>
+        );
+      }
+
+      // ── Screen 1: Goals (multi-select, up to 3) ──
+      function GoalsScreen() {
+        const options = [
+          'Breathe easier', 'Save money', 'Break the addiction', 'Mental clarity',
+          'Better fitness', 'Improve relationships', 'Feel in control', 'Better sleep'
+        ];
+        return (
+          <div className="screen" key="s1">
+            <ProgressBar current={1} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>What do you want to achieve?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>
+              So tell us {displayName}, what matters most? <span style={{ color: 'var(--dark-grey)', fontSize: 12 }}>(pick up to 3)</span>
+            </p>
+            <div className="multi-select-grid mb-24">
+              {options.map(opt => (
+                <div
+                  key={opt}
+                  className={`multi-select-card ${(data.goals || []).includes(opt) ? 'selected' : ''}`}
+                  onClick={() => toggleArrayItem('goals', opt, 3)}
+                >
+                  <div className="ms-check">✓</div>
+                  <span className="emoji">{GOAL_EMOJIS[opt]}</span>
+                  <span className="label">{opt}</span>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next} disabled={!(data.goals && data.goals.length > 0)}>
+              Continue
+            </button>
+          </div>
+        );
+      }
+
+      // ── Screen 2: Long-term goal (single select) ──
+      function LongTermGoalScreen() {
+        const options = [
+          { key: 'quit', label: 'Quit vaping completely', emoji: '🚫' },
+          { key: 'cut_down', label: 'Cut down significantly', emoji: '📉' },
+          { key: '30_day_break', label: 'Take a 30-day break', emoji: '📅' },
+          { key: 'track', label: 'Just track and see', emoji: '📊' }
+        ];
+        return (
+          <div className="screen" key="s2">
+            <ProgressBar current={2} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>What's your long-term goal?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>
+              Got it {displayName}! Now where do you see yourself headed?
+            </p>
+            <div className="option-stack mb-32">
+              {options.map(o => (
+                <div
+                  key={o.key}
+                  className={`option-card ${data.longTermGoal === o.key ? 'selected' : ''}`}
+                  onClick={() => update('longTermGoal', o.key)}
+                >
+                  <span className="emoji">{o.emoji}</span>
+                  <span className="label">{o.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next} disabled={!data.longTermGoal}>
+              Continue
+            </button>
+          </div>
+        );
+      }
+
+      // ── Screen 3: Vape Type ──
       function VapeTypeScreen() {
         const types = [
           { key: 'disposable', emoji: '🚬', label: 'Disposable' },
           { key: 'pod', emoji: '💨', label: 'Pod System' },
-          { key: 'mod', emoji: '🔋', label: 'Mod / Tank' },
-          { key: 'multiple', emoji: '🔀', label: 'Multiple' }
+          { key: 'mod', emoji: '🔋', label: 'Box Mod' },
+          { key: 'multiple', emoji: '🔀', label: 'Multiple Devices' }
         ];
         return (
-          <div className="screen" key={1}>
-            <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: '25%' }} />
-            </div>
-            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>What do you vape?</h2>
-            <p className="text-muted mb-24" style={{ fontSize: 13 }}>This helps us personalize your quit plan</p>
+          <div className="screen" key="s3">
+            <ProgressBar current={3} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>What do you vape?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>This helps us understand your usage pattern.</p>
             <div className="option-grid mb-32">
               {types.map(t => (
                 <div
@@ -551,20 +841,19 @@
         );
       }
 
-      // ── Screen 2: Daily Puffs ──
+      // ── Screen 4: Daily Puffs (slider) ──
       function DailyPuffsScreen() {
         return (
-          <div className="screen" key={2}>
-            <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: '50%' }} />
-            </div>
-            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>How much do you puff daily?</h2>
-            <p className="text-muted mb-32" style={{ fontSize: 13 }}>Estimate your average — it doesn't need to be exact</p>
+          <div className="screen" key="s4">
+            <ProgressBar current={4} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How many puffs per day?</h2>
+            <p className="text-muted mb-32" style={{ fontSize: 14 }}>Now, let's understand your use a bit more.</p>
             <div className="text-center mb-16">
-              <span style={{ fontSize: 48, fontWeight: 700, color: 'var(--primary)' }}>
+              <span style={{ fontSize: 56, fontWeight: 700, color: 'var(--primary)' }}>
                 {data.dailyPuffs}
               </span>
-              <span className="text-muted" style={{ fontSize: 15, marginLeft: 8 }}>puffs/day</span>
+              <br />
+              <span className="text-muted" style={{ fontSize: 15 }}>puffs per day</span>
             </div>
             <input
               type="range"
@@ -572,7 +861,7 @@
               value={data.dailyPuffs}
               onChange={e => update('dailyPuffs', Number(e.target.value))}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 32 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
               <span className="text-muted" style={{ fontSize: 13 }}>10</span>
               <span className="text-muted" style={{ fontSize: 13 }}>500</span>
             </div>
@@ -588,27 +877,26 @@
         );
       }
 
-      // ── Screen 3: Weekly Spend ──
-      function WeeklySpendScreen() {
+      // ── Screen 5: Vaping Duration (single select) ──
+      function VapingDurationScreen() {
         const options = [
-          { key: 'under_15', label: 'Under $15/week', emoji: '💵' },
-          { key: '15_30', label: '$15 – $30/week', emoji: '💰' },
-          { key: '30_50', label: '$30 – $50/week', emoji: '💸' },
-          { key: '50_plus', label: '$50+/week', emoji: '🤯' }
+          { key: 'under_6mo', label: 'Less than 6 months', emoji: '🌱' },
+          { key: '6_12mo', label: '6–12 months', emoji: '📅' },
+          { key: '1_2yr', label: '1–2 years', emoji: '⏳' },
+          { key: '2_5yr', label: '2–5 years', emoji: '📆' },
+          { key: '5plus', label: '5+ years', emoji: '🔒' }
         ];
         return (
-          <div className="screen" key={3}>
-            <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: '75%' }} />
-            </div>
-            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>How much do you spend on vaping?</h2>
-            <p className="text-muted mb-24" style={{ fontSize: 13 }}>We'll show you how much you can save</p>
+          <div className="screen" key="s5">
+            <ProgressBar current={5} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How long have you been vaping?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>This helps us tailor your quit timeline.</p>
             <div className="option-stack mb-32">
               {options.map(o => (
                 <div
                   key={o.key}
-                  className={`option-card ${data.weeklySpend === o.key ? 'selected' : ''}`}
-                  onClick={() => update('weeklySpend', o.key)}
+                  className={`option-card ${data.vapingDuration === o.key ? 'selected' : ''}`}
+                  onClick={() => update('vapingDuration', o.key)}
                 >
                   <span className="emoji">{o.emoji}</span>
                   <span className="label">{o.label}</span>
@@ -616,28 +904,138 @@
               ))}
             </div>
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next} disabled={!data.weeklySpend}>
+            <button className="btn btn-primary" onClick={next} disabled={!data.vapingDuration}>
               Continue
             </button>
           </div>
         );
       }
 
-      // ── Screen 4: Biggest Struggle ──
+      // ── Screen 6: Weekly Spend (slider) ──
+      function WeeklySpendScreen() {
+        const spend = typeof data.weeklySpend === 'number' ? data.weeklySpend : 30;
+        return (
+          <div className="screen" key="s6">
+            <ProgressBar current={6} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How much do you spend per week?</h2>
+            <p className="text-muted mb-32" style={{ fontSize: 14 }}>We use this to calculate your savings.</p>
+            <div className="text-center mb-16">
+              <span style={{ fontSize: 56, fontWeight: 700, color: 'var(--gold)' }}>
+                ${spend}
+              </span>
+              <br />
+              <span className="text-muted" style={{ fontSize: 15 }}>per week on vaping</span>
+            </div>
+            <input
+              type="range"
+              min={5} max={100} step={5}
+              value={spend}
+              onChange={e => update('weeklySpend', Number(e.target.value))}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+              <span className="text-muted" style={{ fontSize: 13 }}>$5</span>
+              <span className="text-muted" style={{ fontSize: 13 }}>$100</span>
+            </div>
+            <p className="text-muted text-center mb-32" style={{ fontSize: 13 }}>
+              That's <span style={{ color: 'var(--gold)', fontWeight: 600 }}>${spend * 52}</span> per year
+            </p>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Continue</button>
+          </div>
+        );
+      }
+
+      // ── Screen 7: Life Impact (emoji slider) ──
+      function LifeImpactScreen() {
+        const faces = ['😫', '😟', '😐', '🙂', '😄'];
+        const labels = ['Seriously harming', 'Somewhat harming', 'Neutral', 'Somewhat helping', 'Helping'];
+        const impact = data.lifeImpact || 3;
+        return (
+          <div className="screen" key="s7">
+            <ProgressBar current={7} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How is vaping affecting your life?</h2>
+            <p className="text-muted mb-32" style={{ fontSize: 14 }}>Be honest — there's no wrong answer.</p>
+            <div className="text-center mb-16">
+              <div className="emoji-slider-face" key={impact}
+                style={{ animation: 'popIn 0.3s ease-out' }}>
+                {faces[impact - 1]}
+              </div>
+              <p style={{ fontSize: 16, fontWeight: 500, marginTop: 8, color: impact <= 2 ? 'var(--coral)' : impact >= 4 ? 'var(--mint)' : 'var(--subtext)' }}>
+                {labels[impact - 1]}
+              </p>
+            </div>
+            <input
+              type="range"
+              min={1} max={5} step={1}
+              value={impact}
+              onChange={e => update('lifeImpact', Number(e.target.value))}
+              style={{
+                background: `linear-gradient(90deg, var(--coral) 0%, var(--gold) 50%, var(--mint) 100%)`
+              }}
+            />
+            <div className="emoji-slider-labels mb-32">
+              <span>Harming</span>
+              <span>Helping</span>
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Continue</button>
+          </div>
+        );
+      }
+
+      // ── Screen 8: Triggers (multi-select, up to 3) ──
+      function TriggersScreen() {
+        const options = [
+          { label: 'First thing in the morning', emoji: '🌅' },
+          { label: 'After meals', emoji: '🍽️' },
+          { label: 'When stressed', emoji: '😰' },
+          { label: 'When bored', emoji: '😑' },
+          { label: 'While driving', emoji: '🚗' },
+          { label: 'Social situations', emoji: '👥' },
+          { label: 'Before bed', emoji: '🌙' },
+          { label: 'While working', emoji: '💻' }
+        ];
+        return (
+          <div className="screen" key="s8">
+            <ProgressBar current={8} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>When do you vape most?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>
+              To help us create a plan for when temptations arise. <span style={{ color: 'var(--dark-grey)', fontSize: 12 }}>(pick up to 3)</span>
+            </p>
+            <div className="multi-select-grid mb-24">
+              {options.map(o => (
+                <div
+                  key={o.label}
+                  className={`multi-select-card ${(data.triggers || []).includes(o.label) ? 'selected' : ''}`}
+                  onClick={() => toggleArrayItem('triggers', o.label, 3)}
+                >
+                  <div className="ms-check">✓</div>
+                  <span className="emoji">{o.emoji}</span>
+                  <span className="label">{o.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next} disabled={!(data.triggers && data.triggers.length > 0)}>
+              Continue
+            </button>
+          </div>
+        );
+      }
+
+      // ── Screen 9: Biggest Struggle ──
       function BiggestStruggleScreen() {
         const options = [
-          { key: 'cravings', label: 'Intense cravings', emoji: '🧠' },
+          { key: 'cravings', label: 'Cravings are intense', emoji: '🧠' },
           { key: 'habit', label: 'It\'s just a habit', emoji: '🔁' },
           { key: 'social', label: 'Social pressure', emoji: '👥' },
           { key: 'stress', label: 'Stress relief', emoji: '😤' }
         ];
         return (
-          <div className="screen" key={4}>
-            <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: '100%' }} />
-            </div>
-            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>What's your biggest struggle?</h2>
-            <p className="text-muted mb-24" style={{ fontSize: 13 }}>Our AI coach will focus on this area</p>
+          <div className="screen" key="s9">
+            <ProgressBar current={9} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>What's your biggest struggle?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>Understanding this helps us support you better.</p>
             <div className="option-stack mb-32">
               {options.map(o => (
                 <div
@@ -658,10 +1056,247 @@
         );
       }
 
-      // ── Screen 5: Personal Plan (Conversion) ──
+      // ── Screen 10: Quit Attempts ──
+      function QuitAttemptsScreen() {
+        const options = [
+          { key: 'many', label: 'Yes, many times', emoji: '🔄' },
+          { key: 'few', label: 'Yes, once or twice', emoji: '✌️' },
+          { key: 'first', label: 'No, this is my first try', emoji: '🌟' }
+        ];
+        return (
+          <div className="screen" key="s10">
+            <ProgressBar current={10} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Have you tried to quit before?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>This helps us build on what you already know.</p>
+            <div className="option-stack mb-32">
+              {options.map(o => (
+                <div
+                  key={o.key}
+                  className={`option-card ${data.quitAttempts === o.key ? 'selected' : ''}`}
+                  onClick={() => update('quitAttempts', o.key)}
+                >
+                  <span className="emoji">{o.emoji}</span>
+                  <span className="label">{o.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next} disabled={!data.quitAttempts}>
+              Continue
+            </button>
+          </div>
+        );
+      }
+
+      // ════════════════════════════════════════
+      // PHASE 2: SHOW THE SOLUTION (11-15)
+      // ════════════════════════════════════════
+
+      // ── Screen 11: Transition ──
+      function TransitionScreen() {
+        return (
+          <div className="screen screen-gradient" key="s11">
+            <div className="spacer" />
+            <div className="text-center mb-32" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+              <div style={{ fontSize: 64, marginBottom: 24 }}>✨</div>
+              <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 12, lineHeight: 1.2 }}>
+                Thanks {displayName}!
+              </h2>
+              <p className="text-muted" style={{ fontSize: 16, lineHeight: 1.5 }}>
+                Based on thousands of vapers, here's where you're at
+              </p>
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Show Me</button>
+          </div>
+        );
+      }
+
+      // ── Screen 12: Personalized Snapshot ──
+      function SnapshotScreen() {
+        const weeklySpendNum = getWeeklySpendNum(data.weeklySpend);
+        const yearlySpend = Math.round(weeklySpendNum * 52);
+
+        // Nicotine dependency: based on daily puffs + duration
+        const durationMultiplier = {
+          'under_6mo': 0.5, '6_12mo': 0.7, '1_2yr': 0.85, '2_5yr': 0.95, '5plus': 1.0
+        };
+        const durMult = durationMultiplier[data.vapingDuration] || 0.7;
+        const puffScore = Math.min(data.dailyPuffs / 500, 1);
+        const nicotineDep = Math.round((puffScore * 0.6 + durMult * 0.4) * 100);
+
+        // Habit strength: based on number of triggers + duration
+        const triggerCount = (data.triggers || []).length;
+        const habitStrength = Math.round((triggerCount / 3 * 0.5 + durMult * 0.5) * 100);
+
+        const [show, setShow] = useState(false);
+        useEffect(() => { const t = setTimeout(() => setShow(true), 300); return () => clearTimeout(t); }, []);
+
+        return (
+          <div className="screen" key="s12">
+            <ProgressBar current={12} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Your Vaping Snapshot</h2>
+            <p className="text-muted mb-32" style={{ fontSize: 14 }}>Here's what your answers tell us, {displayName}.</p>
+
+            <div className="card mb-24" style={{ padding: 20 }}>
+              <div className="snapshot-bar-container">
+                <div className="snapshot-bar-label">
+                  <span className="bar-title">Nicotine Dependency</span>
+                  <span className="bar-value" style={{ color: 'var(--coral)' }}>{nicotineDep}%</span>
+                </div>
+                <div className="snapshot-bar">
+                  <div className="snapshot-bar-fill red" style={{ width: show ? nicotineDep + '%' : '0%' }} />
+                </div>
+              </div>
+
+              <div className="snapshot-bar-container">
+                <div className="snapshot-bar-label">
+                  <span className="bar-title">Habit Strength</span>
+                  <span className="bar-value" style={{ color: 'var(--gold)' }}>{habitStrength}%</span>
+                </div>
+                <div className="snapshot-bar">
+                  <div className="snapshot-bar-fill orange" style={{ width: show ? habitStrength + '%' : '0%' }} />
+                </div>
+              </div>
+
+              <div className="snapshot-bar-container" style={{ marginBottom: 0 }}>
+                <div className="snapshot-bar-label">
+                  <span className="bar-title">Financial Drain</span>
+                  <span className="bar-value" style={{ color: 'var(--gold)' }}>${yearlySpend}/yr</span>
+                </div>
+                <p className="text-muted" style={{ fontSize: 13, marginTop: 4 }}>
+                  You'll spend <span style={{ color: 'var(--gold)', fontWeight: 600 }}>${yearlySpend}</span> this year on vaping
+                </p>
+              </div>
+            </div>
+
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Next</button>
+          </div>
+        );
+      }
+
+      // ── Screen 13: Usage Comparison ──
+      function ComparisonScreen() {
+        const avgPuffs = 100; // Average baseline
+        const userPuffs = data.dailyPuffs;
+        const percentile = Math.min(Math.round((userPuffs / 400) * 100), 99);
+        const othersWidth = Math.round((avgPuffs / Math.max(userPuffs, avgPuffs)) * 100);
+        const youWidth = Math.round((userPuffs / Math.max(userPuffs, avgPuffs)) * 100);
+
+        const [show, setShow] = useState(false);
+        useEffect(() => { const t = setTimeout(() => setShow(true), 300); return () => clearTimeout(t); }, []);
+
+        return (
+          <div className="screen" key="s13">
+            <ProgressBar current={13} total={20} />
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Your Usage vs Others</h2>
+            <p className="text-muted mb-32" style={{ fontSize: 14 }}>How your daily puffs compare to other vapers.</p>
+
+            <div className="card mb-24" style={{ padding: 20 }}>
+              <div className="comparison-bar-wrapper">
+                <div className="comparison-bar-label">
+                  <span style={{ color: 'var(--mint)' }}>Others</span>
+                  <span className="text-muted" style={{ fontSize: 13 }}>~{avgPuffs} puffs/day</span>
+                </div>
+                <div className="comparison-bar-track">
+                  <div className="comparison-bar-value green" style={{ width: show ? othersWidth + '%' : '0%' }}>
+                    {avgPuffs}
+                  </div>
+                </div>
+              </div>
+
+              <div className="comparison-bar-wrapper" style={{ marginBottom: 0 }}>
+                <div className="comparison-bar-label">
+                  <span style={{ color: 'var(--coral)' }}>You</span>
+                  <span className="text-muted" style={{ fontSize: 13 }}>{userPuffs} puffs/day</span>
+                </div>
+                <div className="comparison-bar-track">
+                  <div className="comparison-bar-value red" style={{ width: show ? youWidth + '%' : '0%' }}>
+                    {userPuffs}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center mb-32">
+              <p style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.4 }}>
+                Your vaping is higher than <span style={{ color: 'var(--coral)', fontWeight: 700 }}>{percentile}%</span> of other people
+              </p>
+              {data.quitAttempts === 'many' && (
+                <p className="text-muted" style={{ fontSize: 14, marginTop: 8 }}>
+                  You've tried before — this time, you'll have a plan.
+                </p>
+              )}
+              {data.quitAttempts === 'first' && (
+                <p className="text-muted" style={{ fontSize: 14, marginTop: 8 }}>
+                  Starting your first quit journey takes courage. We've got you.
+                </p>
+              )}
+            </div>
+
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Next</button>
+          </div>
+        );
+      }
+
+      // ── Screen 14: Goals + Solution ──
+      function GoalsSolutionScreen() {
+        const goalLabels = {
+          quit: 'Quit completely',
+          cut_down: 'Cut down significantly',
+          '30_day_break': 'Take a 30-day break',
+          track: 'Track and see'
+        };
+        return (
+          <div className="screen" key="s14">
+            <ProgressBar current={14} total={20} />
+            <div className="spacer" style={{ flex: 0.2 }} />
+            <div className="text-center mb-24">
+              <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, lineHeight: 1.2 }}>
+                You're in the right place, {displayName}!
+              </h2>
+            </div>
+
+            <div className="mb-24">
+              <p className="text-muted mb-12" style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>Your goals</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {(data.goals || []).map(g => (
+                  <div className="goal-chip" key={g}>
+                    <span>{GOAL_EMOJIS[g]}</span>
+                    <span>{g}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card mb-24" style={{ padding: 16, borderColor: 'rgba(45,212,191,0.3)' }}>
+              <p className="text-muted" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600, marginBottom: 4 }}>Your mission</p>
+              <p style={{ fontSize: 17, fontWeight: 600 }}>
+                {goalLabels[data.longTermGoal] || 'Quit vaping'}
+              </p>
+            </div>
+
+            <div className="card mb-24" style={{ padding: 16, background: 'linear-gradient(135deg, rgba(45,212,191,0.06), rgba(134,239,172,0.06))', borderColor: 'rgba(134,239,172,0.2)' }}>
+              <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.5, marginBottom: 8 }}>
+                Thousands have started with the same goals, and PuffDown got them there.
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>
+                4.8 stars from 2,000+ users
+              </p>
+            </div>
+
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>See My Plan</button>
+          </div>
+        );
+      }
+
+      // ── Screen 15: Personalized Plan ──
       function PersonalPlanScreen() {
-        const weeklyMid = SPEND_MAP[data.weeklySpend] || 22.5;
-        const savingsTarget = Math.round(weeklyMid * 12);
+        const weeklySpendNum = getWeeklySpendNum(data.weeklySpend);
+        const savingsTarget = Math.round(weeklySpendNum * 6.5);
         const quitDate = new Date();
         quitDate.setDate(quitDate.getDate() + 45);
         const quitDateStr = quitDate.toLocaleDateString('en-US', {
@@ -670,24 +1305,22 @@
 
         const animDays = useCountUp(45, 1500, 200);
         const animSavings = useCountUp(savingsTarget, 1500, 500);
-        const animHealth = useCountUp(30, 1500, 800);
+
+        const topGoals = (data.goals || []).slice(0, 3);
 
         return (
-          <div className="screen" key={5}>
-            <div className="spacer" style={{ flex: 0.3 }} />
-            <div className="text-center mb-32">
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
-              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>
-                Your PuffDown plan is ready
+          <div className="screen" key="s15">
+            <ProgressBar current={15} total={20} />
+            <div className="text-center mb-24">
+              <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4, lineHeight: 1.1 }}>
+                {displayName}'s PuffDown Plan
               </h2>
-              <p className="text-muted" style={{ fontSize: 15 }}>
-                Personalized for your habits and goals
-              </p>
+              <p className="text-muted" style={{ fontSize: 14 }}>45 days from now</p>
             </div>
 
             <div className="card mb-12" style={{ textAlign: 'center', padding: 20 }}>
               <p className="text-muted" style={{ fontSize: 13, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 500 }}>
-                Quit by
+                Your target
               </p>
               <p style={{ fontSize: 48, fontWeight: 700, color: 'var(--primary)' }}>
                 {animDays} <span style={{ fontSize: 22, fontWeight: 600 }}>days</span>
@@ -697,92 +1330,96 @@
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 32 }}>
-              <div className="card" style={{ textAlign: 'center', padding: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+              <div className="card" style={{ textAlign: 'center', padding: 14 }}>
                 <p className="text-muted" style={{ fontSize: 11, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 500 }}>
                   You'll save
                 </p>
-                <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--gold)' }}>
+                <p style={{ fontSize: 26, fontWeight: 700, color: 'var(--gold)' }}>
                   ${animSavings}
                 </p>
-                <p className="text-muted" style={{ fontSize: 13, marginTop: 2 }}>in 12 weeks</p>
               </div>
-              <div className="card" style={{ textAlign: 'center', padding: 16 }}>
-                <p className="text-muted" style={{ fontSize: 11, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 500 }}>
-                  Lung health
-                </p>
-                <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--mint)' }}>
-                  +{animHealth}%
-                </p>
-                <p className="text-muted" style={{ fontSize: 13, marginTop: 2 }}>in 2 weeks</p>
-              </div>
+              {topGoals[0] && (
+                <div className="card" style={{ textAlign: 'center', padding: 14 }}>
+                  <p className="text-muted" style={{ fontSize: 11, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 500 }}>
+                    Top goal
+                  </p>
+                  <p style={{ fontSize: 20, marginBottom: 2 }}>{GOAL_EMOJIS[topGoals[0]]}</p>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--primary)' }}>{topGoals[0]}</p>
+                </div>
+              )}
             </div>
 
-            <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>See How It Works</button>
-          </div>
-        );
-      }
-
-      // ── Screen 6: How It Works ──
-      function HowItWorksScreen() {
-        const steps = [
-          {
-            num: 1,
-            title: 'Track your puffs',
-            desc: 'Log each session. Our AI learns your patterns and triggers to give you personalized advice.'
-          },
-          {
-            num: 2,
-            title: 'Reduce gradually',
-            desc: 'Your daily limit drops at your pace. No cold turkey — we meet you where you are.'
-          },
-          {
-            num: 3,
-            title: 'Quit for good',
-            desc: 'AI-powered coaching, craving tools, and milestone rewards keep you on track to zero.'
-          }
-        ];
-        return (
-          <div className="screen" key={6}>
-            <div className="spacer" style={{ flex: 0.3 }} />
-            <div className="text-center mb-32">
-              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>How PuffDown Works</h2>
-              <p className="text-muted" style={{ fontSize: 15 }}>3 simple steps to quit vaping</p>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 28, marginBottom: 32 }}>
-              {steps.map(s => (
-                <div className="step-item" key={s.num}>
-                  <div className="step-circle">{s.num}</div>
+            <div className="card mb-24" style={{ padding: 16 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--primary)', marginBottom: 12 }}>
+                How we'll get you there
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="step-item">
+                  <div className="step-circle">1</div>
                   <div>
-                    <p style={{ fontSize: 17, fontWeight: 500, marginBottom: 4 }}>{s.title}</p>
-                    <p className="text-muted" style={{ fontSize: 13, lineHeight: 1.3 }}>{s.desc}</p>
+                    <p style={{ fontSize: 15, fontWeight: 500 }}>Track your puffs</p>
+                    <p className="text-muted" style={{ fontSize: 13 }}>Build awareness of your patterns</p>
                   </div>
                 </div>
-              ))}
+                <div className="step-item">
+                  <div className="step-circle">2</div>
+                  <div>
+                    <p style={{ fontSize: 15, fontWeight: 500 }}>Reduce gradually</p>
+                    <p className="text-muted" style={{ fontSize: 13 }}>Daily limits that adapt to you</p>
+                  </div>
+                </div>
+                <div className="step-item">
+                  <div className="step-circle">3</div>
+                  <div>
+                    <p style={{ fontSize: 15, fontWeight: 500 }}>Hit your goals</p>
+                    <p className="text-muted" style={{ fontSize: 13 }}>{topGoals.join(', ') || 'Quit for good'}</p>
+                  </div>
+                </div>
+              </div>
             </div>
+
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Try It Now</button>
+            <button className="btn btn-primary mb-12" onClick={next}>Start my PuffDown</button>
+            <div className="text-center">
+              <button className="link-muted" onClick={() => {
+                setData(prev => ({ ...prev, onboardingComplete: true, startDate: todayKey(), puffLogs: prev.puffLogs || {} }));
+                setScreen(TOTAL_ONBOARDING_SCREENS);
+              }}>I'm not ready yet</button>
+            </div>
           </div>
         );
       }
 
-      // ── Screen 7: Wow Moment ──
+      // ════════════════════════════════════════
+      // PHASE 3: WOW MOMENT (16)
+      // ════════════════════════════════════════
+
+      // ── Screen 16: Interactive Day 1 Demo ──
       function WowMomentScreen() {
+        const [demoPuffs, setDemoPuffs] = useState(0);
+        const [tapped, setTapped] = useState(false);
         const todayStr = new Date().toLocaleDateString('en-US', {
           weekday: 'long', month: 'long', day: 'numeric'
         });
         const dailyTarget = Math.max(data.dailyPuffs - 10, 1);
         const circumference = 2 * Math.PI * 88;
+        const progress = Math.min(demoPuffs / dailyTarget, 1);
+        const offset = circumference * (1 - progress);
+
+        const handleTap = () => {
+          setDemoPuffs(p => p + 1);
+          setTapped(true);
+        };
 
         return (
-          <div className="screen" key={7}>
+          <div className="screen" key="s16">
             <div className="text-center mb-8">
               <p className="text-muted" style={{ fontSize: 13 }}>{todayStr}</p>
               <h2 style={{ fontSize: 28, fontWeight: 700, marginTop: 4, lineHeight: 1.1 }}>Day 1</h2>
             </div>
 
-            <div className="spacer" style={{ flex: 0.2 }} />
+            <div style={{ height: 12 }} />
 
             <div className="progress-ring-container mb-24">
               <svg viewBox="0 0 200 200">
@@ -791,16 +1428,19 @@
                   className="progress-ring-fill"
                   cx="100" cy="100" r="88"
                   strokeDasharray={circumference}
-                  strokeDashoffset={circumference}
+                  strokeDashoffset={offset}
                 />
               </svg>
               <div className="progress-ring-text">
-                <span style={{ fontSize: 48, fontWeight: 700 }}>0</span>
+                <span style={{
+                  fontSize: 48, fontWeight: 700,
+                  animation: demoPuffs > 0 ? 'countPulse 0.3s ease' : 'none'
+                }} key={demoPuffs}>{demoPuffs}</span>
                 <span className="text-muted" style={{ fontSize: 15 }}>/ {dailyTarget} puffs</span>
               </div>
             </div>
 
-            <div className="stat-row mb-32">
+            <div className="stat-row mb-24">
               <div className="stat-box">
                 <div className="stat-value" style={{ color: 'var(--primary)' }}>0</div>
                 <div className="stat-label">Day Streak</div>
@@ -815,24 +1455,51 @@
               </div>
             </div>
 
+            {!tapped && (
+              <button className="btn btn-primary mb-16" onClick={handleTap}
+                style={{ animation: 'countPulse 2s ease-in-out infinite' }}>
+                Tap to log your first puff
+              </button>
+            )}
+
+            {tapped && (
+              <div style={{ animation: 'fadeInUp 0.4s ease-out' }}>
+                <div className="card mb-16" style={{ padding: 16, borderColor: 'rgba(45,212,191,0.3)', textAlign: 'center' }}>
+                  <p style={{ fontSize: 15, lineHeight: 1.5 }}>
+                    This is how easy it is. Every puff you track brings you closer to quitting.
+                  </p>
+                </div>
+                <button className="btn btn-primary" onClick={next}>I'm Ready</button>
+              </div>
+            )}
+
+            {tapped && (
+              <button className="btn btn-outline mb-12" onClick={handleTap} style={{ marginTop: 8 }}>
+                + Log another puff
+              </button>
+            )}
+
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Start My Journey</button>
           </div>
         );
       }
 
-      // ── Screen 8: Paywall Step 1 ──
+      // ════════════════════════════════════════
+      // PHASE 4: SOFT PAYWALL (17-19)
+      // ════════════════════════════════════════
+
+      // ── Screen 17: Paywall Step 1 (Features) ──
       function PaywallStep1Screen() {
         const features = [
-          { title: 'Unlimited AI coaching', desc: 'Personalized advice for cravings, triggers & more' },
           { title: 'Smart puff tracking', desc: 'Auto-adjusting daily limits that adapt to you' },
-          { title: 'Progress insights', desc: 'Health recovery timeline, savings tracker & streaks' }
+          { title: 'Progress insights', desc: 'Health recovery timeline, savings tracker & streaks' },
+          { title: 'Craving support', desc: 'Techniques and tools when urges hit' }
         ];
         return (
-          <div className="screen" key={8}>
+          <div className="screen" key="s17">
             <div className="spacer" style={{ flex: 0.3 }} />
             <div className="text-center mb-32">
-              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>
+              <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>
                 Your plan is ready.<br />Unlock it all.
               </h2>
             </div>
@@ -853,10 +1520,10 @@
         );
       }
 
-      // ── Screen 9: Paywall Step 2 (Trust) ──
+      // ── Screen 18: Paywall Step 2 (Trust) ──
       function PaywallStep2Screen() {
         return (
-          <div className="screen" key={9}>
+          <div className="screen" key="s18">
             <div className="spacer" />
             <div className="text-center">
               <div style={{
@@ -868,31 +1535,33 @@
               <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 12, lineHeight: 1.3 }}>
                 We'll remind you before your trial ends
               </h2>
-              <p className="text-muted mb-32" style={{ fontSize: 15, lineHeight: 1.3 }}>
+              <p className="text-muted mb-32" style={{ fontSize: 15, lineHeight: 1.4 }}>
                 You won't be charged today. Start your 7-day free trial and cancel anytime — we'll send a reminder 24 hours before it renews.
               </p>
+              <p style={{ fontSize: 14, color: 'var(--mint)', fontWeight: 600 }}>No Payment Due Now</p>
             </div>
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Continue</button>
+            <button className="btn btn-primary" onClick={next}>Continue for FREE</button>
           </div>
         );
       }
 
-      // ── Screen 10: Paywall Step 3 (Pricing) ──
+      // ── Screen 19: Paywall Step 3 (Pricing — soft) ──
       function PaywallStep3Screen() {
         const [selectedPlan, setSelectedPlan] = useState('monthly');
 
         const finishOnboarding = () => {
-          setData(prev => ({ ...prev, onboardingComplete: true, startDate: todayKey(), puffLogs: {} }));
-          setScreen(11);
-          // Request notification permission after onboarding
-          if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
-          }
+          setData(prev => ({
+            ...prev,
+            onboardingComplete: true,
+            startDate: prev.startDate || todayKey(),
+            puffLogs: prev.puffLogs || {}
+          }));
+          setScreen(20); // Go to notification screen
         };
 
         return (
-          <div className="screen" key={10}>
+          <div className="screen" key="s19">
             <div className="spacer" style={{ flex: 0.2 }} />
             <div className="text-center mb-24">
               <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>Choose your plan</h2>
@@ -933,7 +1602,7 @@
             </button>
 
             <div className="text-center mb-12">
-              <button className="link-muted" onClick={finishOnboarding}>Maybe later</button>
+              <button className="link-muted" onClick={finishOnboarding} style={{ fontSize: 14 }}>Maybe later</button>
             </div>
             <div className="text-center">
               <button className="link-muted" style={{ fontSize: 12 }}>Restore Purchases</button>
@@ -943,13 +1612,71 @@
         );
       }
 
-      // ── Helper: today's date key ──
+      // ════════════════════════════════════════
+      // SCREEN 20: NOTIFICATION PERMISSION
+      // ════════════════════════════════════════
+
+      function NotificationScreen() {
+        const handleEnable = () => {
+          if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+          }
+          setScreen(TOTAL_ONBOARDING_SCREENS);
+        };
+
+        return (
+          <div className="screen" key="s20">
+            <div className="spacer" style={{ flex: 0.3 }} />
+            <div className="text-center mb-32">
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%',
+                background: 'var(--primary-dim)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 24px', fontSize: 36
+              }}>🔔</div>
+              <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, lineHeight: 1.2 }}>
+                Reach your goals with notifications
+              </h2>
+              <p className="text-muted" style={{ fontSize: 15, lineHeight: 1.4 }}>
+                PuffDown uses daily reminders to keep you on track
+              </p>
+            </div>
+
+            <div className="mock-notif mb-24">
+              <div className="mock-notif-icon">🫁</div>
+              <div>
+                <p className="mock-notif-title">PuffDown</p>
+                <p className="mock-notif-body">How's your day going? Tap to log and stay on track.</p>
+              </div>
+              <span className="mock-notif-time">now</span>
+            </div>
+
+            <div className="text-center mb-32">
+              <p style={{ fontSize: 14, color: 'var(--primary)', fontWeight: 500 }}>
+                Users who enable notifications are 80% more likely to succeed
+              </p>
+            </div>
+
+            <div className="spacer" />
+            <button className="btn btn-primary mb-12" onClick={handleEnable}>Enable Notifications</button>
+            <div className="text-center">
+              <button className="link-muted" onClick={() => setScreen(TOTAL_ONBOARDING_SCREENS)}>
+                Not now
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ════════════════════════════════════════
+      // HELPERS
+      // ════════════════════════════════════════
+
       function todayKey() {
         const d = new Date();
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       }
 
-      // ── Helper: days since a date string ──
       function daysSince(dateStr) {
         if (!dateStr) return 0;
         const start = new Date(dateStr + 'T00:00:00');
@@ -958,13 +1685,11 @@
         return Math.max(0, Math.floor((now - start) / 86400000));
       }
 
-      // ── Helper: count streak of days where user stayed under target ──
       function calcStreak(puffLogs, dailyPuffs, startDate) {
         if (!startDate) return 0;
         let streak = 0;
         const now = new Date();
         now.setHours(0, 0, 0, 0);
-        // Walk backwards from yesterday (today is still in progress)
         const check = new Date(now);
         check.setDate(check.getDate() - 1);
         const start = new Date(startDate + 'T00:00:00');
@@ -983,7 +1708,10 @@
         return streak;
       }
 
-      // ── Main App (post-onboarding) ──
+      // ════════════════════════════════════════
+      // MAIN APP (Screen 21)
+      // ════════════════════════════════════════
+
       function MainApp() {
         const [activeTab, setActiveTab] = useState('dashboard');
         const startDate = data.startDate || todayKey();
@@ -1001,7 +1729,6 @@
           weekday: 'long', month: 'long', day: 'numeric'
         });
 
-        // Set startDate on first visit
         useEffect(() => {
           if (!data.startDate) {
             update('startDate', todayKey());
@@ -1010,8 +1737,8 @@
 
         const streak = calcStreak(puffLogs, data.dailyPuffs, startDate);
 
-        // Savings: puffs avoided * cost per puff
-        const weeklyMid = SPEND_MAP[data.weeklySpend] || 22.5;
+        // Savings: puffs avoided * cost per puff (handles both old string and new number format)
+        const weeklyMid = getWeeklySpendNum(data.weeklySpend);
         const costPerPuff = weeklyMid / 7 / data.dailyPuffs;
         let totalPuffsAvoided = 0;
         for (let i = 0; i <= elapsed; i++) {
@@ -1067,7 +1794,7 @@
           if (!('Notification' in window) || Notification.permission !== 'granted') return;
           if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
 
-          const NOTIF_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours
+          const NOTIF_INTERVAL = 2 * 60 * 60 * 1000;
           const LAST_NOTIF_KEY = 'puffdown_last_notif';
 
           function scheduleNext() {
@@ -1090,9 +1817,8 @@
                 });
                 localStorage.setItem(LAST_NOTIF_KEY, String(Date.now()));
               } catch (e) {}
-              // Schedule the next one
               timerId = scheduleNext();
-            }, Math.max(delay, 60000)); // At least 1 min delay to avoid instant fire
+            }, Math.max(delay, 60000));
           }
 
           let timerId = scheduleNext();
@@ -1101,8 +1827,10 @@
 
         const resetOnboarding = () => {
           const fresh = {
-            vapeType: null, dailyPuffs: 150,
-            weeklySpend: null, biggestStruggle: null,
+            userName: '', goals: [], longTermGoal: null,
+            vapeType: null, dailyPuffs: 150, vapingDuration: null,
+            weeklySpend: 30, lifeImpact: 3, triggers: [],
+            biggestStruggle: null, quitAttempts: null,
             onboardingComplete: false
           };
           saveData(fresh);
@@ -1110,16 +1838,13 @@
           setScreen(0);
         };
 
-        // Daily fact based on day of year
         const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
         const dailyFact = DAILY_FACTS[dayOfYear % DAILY_FACTS.length];
 
-        // Minutes elapsed since start date
         const minutesSinceStart = startDate
           ? (Date.now() - new Date(startDate + 'T00:00:00').getTime()) / 60000
           : 0;
 
-        // Find the next milestone index
         const nextMilestoneIdx = HEALTH_TIMELINE.findIndex(m => m.minutes > minutesSinceStart);
 
         // ── Dashboard Tab ──
@@ -1128,7 +1853,9 @@
             <div className="tab-content">
               <div className="text-center mb-8">
                 <p className="text-muted" style={{ fontSize: 13 }}>{todayStr}</p>
-                <h2 style={{ fontSize: 28, fontWeight: 700, marginTop: 4, lineHeight: 1.1 }}>Day {elapsed + 1}</h2>
+                <h2 style={{ fontSize: 28, fontWeight: 700, marginTop: 4, lineHeight: 1.1 }}>
+                  {displayName ? `${displayName}'s Day ${elapsed + 1}` : `Day ${elapsed + 1}`}
+                </h2>
               </div>
 
               <div style={{ height: 16 }} />
@@ -1242,7 +1969,7 @@
 
         return (
           <React.Fragment>
-            <div className="screen-with-tabs" key={11}>
+            <div className="screen-with-tabs" key="main">
               {activeTab === 'dashboard' && <DashboardTab />}
               {activeTab === 'timeline' && <TimelineTab />}
               {activeTab === 'learn' && <LearnTab />}
@@ -1267,18 +1994,28 @@
 
       // ── Screen router ──
       const screens = [
-        WelcomeScreen,
-        VapeTypeScreen,
-        DailyPuffsScreen,
-        WeeklySpendScreen,
-        BiggestStruggleScreen,
-        PersonalPlanScreen,
-        HowItWorksScreen,
-        WowMomentScreen,
-        PaywallStep1Screen,
-        PaywallStep2Screen,
-        PaywallStep3Screen,
-        MainApp
+        WelcomeScreen,         // 0  - Welcome + name
+        GoalsScreen,           // 1  - Goals multi-select
+        LongTermGoalScreen,    // 2  - Long-term goal
+        VapeTypeScreen,        // 3  - Vape type
+        DailyPuffsScreen,      // 4  - Daily puffs slider
+        VapingDurationScreen,  // 5  - How long vaping
+        WeeklySpendScreen,     // 6  - Weekly spend slider
+        LifeImpactScreen,      // 7  - Emoji life impact slider
+        TriggersScreen,        // 8  - Triggers multi-select
+        BiggestStruggleScreen, // 9  - Biggest struggle
+        QuitAttemptsScreen,    // 10 - Quit attempts
+        TransitionScreen,      // 11 - Transition
+        SnapshotScreen,        // 12 - Personalized snapshot
+        ComparisonScreen,      // 13 - Usage comparison
+        GoalsSolutionScreen,   // 14 - Goals + solution
+        PersonalPlanScreen,    // 15 - Your plan
+        WowMomentScreen,       // 16 - Interactive demo
+        PaywallStep1Screen,    // 17 - Paywall features
+        PaywallStep2Screen,    // 18 - Paywall trust
+        PaywallStep3Screen,    // 19 - Paywall pricing
+        NotificationScreen,    // 20 - Notification permission
+        MainApp                // 21 - Main app
       ];
 
       const CurrentScreen = screens[screen] || MainApp;
