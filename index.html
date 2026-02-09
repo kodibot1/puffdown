@@ -1137,32 +1137,101 @@
       // PHASE 2: SHOW THE SOLUTION (11-15)
       // ════════════════════════════════════════
 
-      // ── Screen 11: Transition ──
+      // ── Screen 11: Analyzing Transition (Noom-style) ──
       function TransitionScreen() {
+        const [step, setStep] = useState(0);
+        const topGoal = (data.goals || [])[0] || 'quitting';
+        const struggleMap = {
+          cravings: 'managing cravings',
+          habit: 'breaking the habit loop',
+          social: 'handling social pressure',
+          stress: 'finding better stress relief'
+        };
+        const struggleText = struggleMap[data.biggestStruggle] || 'your quit journey';
+
+        // Goal-specific personalized messages
+        const goalInsights = {
+          'Breathe easier': 'Your lungs will start clearing within 72 hours',
+          'Save money': `You could save $${Math.round(getWeeklySpendNum(data.weeklySpend) * 52)} this year`,
+          'Break the addiction': 'Most cravings last only 3-5 minutes — we\'ll help you through each one',
+          'Mental clarity': 'Nicotine fog lifts within the first week',
+          'Better fitness': 'Lung capacity improves 30% within 3 months',
+          'Improve relationships': 'No more sneaking away or worrying about the smell',
+          'Feel in control': 'Tracking puts you back in the driver\'s seat',
+          'Better sleep': 'Without nicotine, deep sleep returns within days'
+        };
+
+        const steps = [
+          { text: `Analyzing your ${data.dailyPuffs} puffs/day pattern...`, delay: 800 },
+          { text: `Building a plan for ${struggleText}...`, delay: 1600 },
+          { text: `Personalizing for "${topGoal}"...`, delay: 2400 }
+        ];
+
+        useEffect(() => {
+          const timers = steps.map((s, i) =>
+            setTimeout(() => setStep(i + 1), s.delay)
+          );
+          const done = setTimeout(() => setStep(4), 3400);
+          return () => { timers.forEach(clearTimeout); clearTimeout(done); };
+        }, []);
+
         return (
           <div className="screen screen-gradient" key="s11">
             <div className="spacer" />
-            <div className="text-center mb-32" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-              <div style={{ fontSize: 64, marginBottom: 24 }}>✨</div>
-              <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 12, lineHeight: 1.2 }}>
-                Thanks {displayName}!
-              </h2>
-              <p className="text-muted" style={{ fontSize: 16, lineHeight: 1.5 }}>
-                Based on thousands of vapers, here's where you're at
-              </p>
+            <div className="text-center mb-32">
+              {step < 4 ? (
+                <div style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+                  <div style={{
+                    width: 64, height: 64, margin: '0 auto 24px',
+                    border: '3px solid var(--card-border)', borderTop: '3px solid var(--primary)',
+                    borderRadius: '50%', animation: 'spin 1s linear infinite'
+                  }} />
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                  {steps.map((s, i) => (
+                    <p key={i} style={{
+                      fontSize: 15, color: step > i ? 'var(--primary)' : 'var(--dark-grey)',
+                      marginBottom: 8, transition: 'color 0.3s',
+                      opacity: step > i ? 1 : 0.4
+                    }}>
+                      {step > i ? '✓ ' : ''}{s.text}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ animation: 'fadeInUp 0.4s ease-out' }}>
+                  <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 16, lineHeight: 1.2 }}>
+                    We hear you, {displayName}.
+                  </h2>
+                  <p style={{ fontSize: 16, lineHeight: 1.5, color: 'var(--subtext)', marginBottom: 20 }}>
+                    You want to <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{topGoal.toLowerCase()}</span> and
+                    your biggest challenge is <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{struggleText}</span>.
+                  </p>
+                  {(data.goals || []).slice(0, 2).map(g => goalInsights[g] && (
+                    <div key={g} className="card mb-12" style={{ padding: 14, textAlign: 'left', borderColor: 'rgba(45,212,191,0.2)' }}>
+                      <p style={{ fontSize: 14, lineHeight: 1.4 }}>
+                        <span style={{ marginRight: 8 }}>{GOAL_EMOJIS[g]}</span>
+                        <span style={{ color: 'var(--subtext)' }}>{goalInsights[g]}</span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Show Me</button>
+            {step >= 4 && (
+              <button className="btn btn-primary" onClick={next} style={{ animation: 'fadeInUp 0.3s ease-out' }}>
+                See My Results
+              </button>
+            )}
           </div>
         );
       }
 
-      // ── Screen 12: Personalized Snapshot ──
+      // ── Screen 12: Personalized Snapshot (Circular Gauges) ──
       function SnapshotScreen() {
         const weeklySpendNum = getWeeklySpendNum(data.weeklySpend);
         const yearlySpend = Math.round(weeklySpendNum * 52);
 
-        // Nicotine dependency: based on daily puffs + duration
         const durationMultiplier = {
           'under_6mo': 0.5, '6_12mo': 0.7, '1_2yr': 0.85, '2_5yr': 0.95, '5plus': 1.0
         };
@@ -1170,12 +1239,41 @@
         const puffScore = Math.min(data.dailyPuffs / 500, 1);
         const nicotineDep = Math.round((puffScore * 0.6 + durMult * 0.4) * 100);
 
-        // Habit strength: based on number of triggers + duration
         const triggerCount = (data.triggers || []).length;
         const habitStrength = Math.round((triggerCount / 3 * 0.5 + durMult * 0.5) * 100);
 
         const [show, setShow] = useState(false);
         useEffect(() => { const t = setTimeout(() => setShow(true), 300); return () => clearTimeout(t); }, []);
+
+        // Circular gauge component
+        function Gauge({ value, max, color, label, sublabel, size }) {
+          const s = size || 100;
+          const r = (s - 12) / 2;
+          const circ = 2 * Math.PI * r;
+          const pct = Math.min(value / max, 1);
+          return (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ position: 'relative', width: s, height: s, margin: '0 auto' }}>
+                <svg width={s} height={s} style={{ transform: 'rotate(-90deg)' }}>
+                  <circle cx={s/2} cy={s/2} r={r} fill="none" stroke="var(--card-border)" strokeWidth="8" />
+                  <circle cx={s/2} cy={s/2} r={r} fill="none" stroke={color} strokeWidth="8"
+                    strokeLinecap="round" strokeDasharray={circ}
+                    strokeDashoffset={show ? circ * (1 - pct) : circ}
+                    style={{ transition: 'stroke-dashoffset 1.2s ease-out' }} />
+                </svg>
+                <div style={{
+                  position: 'absolute', inset: 0, display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  flexDirection: 'column'
+                }}>
+                  <span style={{ fontSize: 22, fontWeight: 700, color }}>{value}%</span>
+                </div>
+              </div>
+              <p style={{ fontSize: 13, fontWeight: 600, marginTop: 8 }}>{label}</p>
+              <p style={{ fontSize: 11, color: 'var(--subtext)', marginTop: 2 }}>{sublabel}</p>
+            </div>
+          );
+        }
 
         return (
           <div className="screen" key="s12">
@@ -1183,36 +1281,17 @@
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Your Vaping Snapshot</h2>
             <p className="text-muted mb-32" style={{ fontSize: 14 }}>Here's what your answers tell us, {displayName}.</p>
 
-            <div className="card mb-24" style={{ padding: 20 }}>
-              <div className="snapshot-bar-container">
-                <div className="snapshot-bar-label">
-                  <span className="bar-title">Nicotine Dependency</span>
-                  <span className="bar-value" style={{ color: 'var(--coral)' }}>{nicotineDep}%</span>
-                </div>
-                <div className="snapshot-bar">
-                  <div className="snapshot-bar-fill red" style={{ width: show ? nicotineDep + '%' : '0%' }} />
-                </div>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+              <Gauge value={nicotineDep} max={100} color="var(--coral)" label="Dependency" sublabel="Nicotine level" />
+              <Gauge value={habitStrength} max={100} color="var(--gold)" label="Habit Strength" sublabel="Pattern depth" />
+            </div>
 
-              <div className="snapshot-bar-container">
-                <div className="snapshot-bar-label">
-                  <span className="bar-title">Habit Strength</span>
-                  <span className="bar-value" style={{ color: 'var(--gold)' }}>{habitStrength}%</span>
-                </div>
-                <div className="snapshot-bar">
-                  <div className="snapshot-bar-fill orange" style={{ width: show ? habitStrength + '%' : '0%' }} />
-                </div>
-              </div>
-
-              <div className="snapshot-bar-container" style={{ marginBottom: 0 }}>
-                <div className="snapshot-bar-label">
-                  <span className="bar-title">Financial Drain</span>
-                  <span className="bar-value" style={{ color: 'var(--gold)' }}>${yearlySpend}/yr</span>
-                </div>
-                <p className="text-muted" style={{ fontSize: 13, marginTop: 4 }}>
-                  You'll spend <span style={{ color: 'var(--gold)', fontWeight: 600 }}>${yearlySpend}</span> this year on vaping
-                </p>
-              </div>
+            <div className="card mb-24" style={{ padding: 16, textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: 'var(--subtext)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600, marginBottom: 4 }}>
+                Financial drain
+              </p>
+              <p style={{ fontSize: 32, fontWeight: 700, color: 'var(--gold)' }}>${yearlySpend}</p>
+              <p style={{ fontSize: 14, color: 'var(--subtext)' }}>spent on vaping this year</p>
             </div>
 
             <div className="spacer" />
@@ -1221,61 +1300,73 @@
         );
       }
 
-      // ── Screen 13: Usage Comparison ──
+      // ── Screen 13: You Now vs You in 45 Days ──
       function ComparisonScreen() {
-        const avgPuffs = 100; // Average baseline
-        const userPuffs = data.dailyPuffs;
-        const percentile = Math.min(Math.round((userPuffs / 400) * 100), 99);
-        const othersWidth = Math.round((avgPuffs / Math.max(userPuffs, avgPuffs)) * 100);
-        const youWidth = Math.round((userPuffs / Math.max(userPuffs, avgPuffs)) * 100);
+        const weeklySpendNum = getWeeklySpendNum(data.weeklySpend);
+        const savingsIn45 = Math.round(weeklySpendNum * 6.5);
+        const topGoal = (data.goals || [])[0] || 'Better health';
 
+        // Goal-specific future benefits
+        const futureBenefits = {
+          'Breathe easier': { now: 'Reduced lung capacity', future: 'Lungs clearing, breathing deeper', emoji: '🫁' },
+          'Save money': { now: `Spending $${Math.round(weeklySpendNum)}/week`, future: `$${savingsIn45} back in your pocket`, emoji: '💰' },
+          'Break the addiction': { now: 'Nicotine controls your day', future: 'You control your choices', emoji: '💪' },
+          'Mental clarity': { now: 'Brain fog from nicotine cycles', future: 'Clear head, sharper focus', emoji: '🧠' },
+          'Better fitness': { now: 'Low stamina, heavy breathing', future: '30% more lung capacity', emoji: '🏃' },
+          'Improve relationships': { now: 'Sneaking hits, hiding habits', future: 'Present and honest', emoji: '❤️' },
+          'Feel in control': { now: 'Cravings dictate your schedule', future: 'You decide, not nicotine', emoji: '🎯' },
+          'Better sleep': { now: 'Restless, nicotine-disrupted sleep', future: 'Deep, restorative rest', emoji: '😴' }
+        };
+
+        const goals = (data.goals || []).slice(0, 3);
         const [show, setShow] = useState(false);
         useEffect(() => { const t = setTimeout(() => setShow(true), 300); return () => clearTimeout(t); }, []);
 
         return (
           <div className="screen" key="s13">
             <ProgressBar current={13} total={20} />
-            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Your Usage vs Others</h2>
-            <p className="text-muted mb-32" style={{ fontSize: 14 }}>How your daily puffs compare to other vapers.</p>
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Your Transformation</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 14 }}>What 45 days of PuffDown looks like for you.</p>
 
-            <div className="card mb-24" style={{ padding: 20 }}>
-              <div className="comparison-bar-wrapper">
-                <div className="comparison-bar-label">
-                  <span style={{ color: 'var(--mint)' }}>Others</span>
-                  <span className="text-muted" style={{ fontSize: 13 }}>~{avgPuffs} puffs/day</span>
-                </div>
-                <div className="comparison-bar-track">
-                  <div className="comparison-bar-value green" style={{ width: show ? othersWidth + '%' : '0%' }}>
-                    {avgPuffs}
-                  </div>
-                </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, marginBottom: 24 }}>
+              <div style={{ textAlign: 'center', padding: '12px 8px' }}>
+                <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--coral)', marginBottom: 12 }}>You Now</p>
               </div>
-
-              <div className="comparison-bar-wrapper" style={{ marginBottom: 0 }}>
-                <div className="comparison-bar-label">
-                  <span style={{ color: 'var(--coral)' }}>You</span>
-                  <span className="text-muted" style={{ fontSize: 13 }}>{userPuffs} puffs/day</span>
-                </div>
-                <div className="comparison-bar-track">
-                  <div className="comparison-bar-value red" style={{ width: show ? youWidth + '%' : '0%' }}>
-                    {userPuffs}
-                  </div>
-                </div>
+              <div style={{ textAlign: 'center', padding: '12px 8px' }}>
+                <p style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--mint)', marginBottom: 12 }}>You in 45 Days</p>
               </div>
             </div>
 
-            <div className="text-center mb-32">
-              <p style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.4 }}>
-                Your vaping is higher than <span style={{ color: 'var(--coral)', fontWeight: 700 }}>{percentile}%</span> of other people
-              </p>
+            {goals.map((g, i) => {
+              const benefit = futureBenefits[g] || { now: 'Current habits', future: 'Healthier you', emoji: '✨' };
+              return (
+                <div key={g} className="card mb-12" style={{
+                  padding: 14, opacity: show ? 1 : 0,
+                  transform: show ? 'translateY(0)' : 'translateY(16px)',
+                  transition: `all 0.5s ease-out ${i * 0.2}s`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span style={{ fontSize: 20 }}>{benefit.emoji}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600 }}>{g}</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 8, alignItems: 'center' }}>
+                    <p style={{ fontSize: 13, color: 'var(--coral)', lineHeight: 1.3 }}>{benefit.now}</p>
+                    <span style={{ fontSize: 18, color: 'var(--dark-grey)' }}>→</span>
+                    <p style={{ fontSize: 13, color: 'var(--mint)', fontWeight: 500, lineHeight: 1.3 }}>{benefit.future}</p>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="text-center mb-16" style={{ marginTop: 16 }}>
               {data.quitAttempts === 'many' && (
-                <p className="text-muted" style={{ fontSize: 14, marginTop: 8 }}>
-                  You've tried before — this time, you'll have a plan.
+                <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.4 }}>
+                  You've tried before — this time, you'll have a real plan behind you.
                 </p>
               )}
               {data.quitAttempts === 'first' && (
-                <p className="text-muted" style={{ fontSize: 14, marginTop: 8 }}>
-                  Starting your first quit journey takes courage. We've got you.
+                <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.4 }}>
+                  Your first quit journey starts strong. We've got you.
                 </p>
               )}
             </div>
@@ -1286,7 +1377,7 @@
         );
       }
 
-      // ── Screen 14: Goals + Solution ──
+      // ── Screen 14: Personalized Goal Insights ──
       function GoalsSolutionScreen() {
         const goalLabels = {
           quit: 'Quit completely',
@@ -1294,41 +1385,61 @@
           '30_day_break': 'Take a 30-day break',
           track: 'Track and see'
         };
+
+        // Personalized insight for each goal — this is what makes the user feel heard
+        const goalDetails = {
+          'Breathe easier': { insight: 'Your lungs start healing within 72 hours. By day 30, you\'ll notice deeper breaths and less coughing.', stat: '30% lung improvement in 3 months' },
+          'Save money': { insight: `At $${Math.round(getWeeklySpendNum(data.weeklySpend))}/week, that\'s real money. We\'ll track every dollar you save.`, stat: `$${Math.round(getWeeklySpendNum(data.weeklySpend) * 52)} saved per year` },
+          'Break the addiction': { insight: 'Nicotine rewires your brain\'s reward system. PuffDown helps you untangle it one day at a time.', stat: 'Most cravings last only 3-5 min' },
+          'Mental clarity': { insight: 'Nicotine creates a fog cycle — hit, crash, repeat. Breaking it brings back your natural focus.', stat: 'Focus improves within 1 week' },
+          'Better fitness': { insight: 'Vaping restricts blood flow and lung capacity. Athletes see gains within weeks of cutting back.', stat: 'Lung capacity +30% in 90 days' },
+          'Improve relationships': { insight: 'No more stepping out to hit the vape or worrying about what people think. Be fully present.', stat: 'Relationship quality up 40%' },
+          'Feel in control': { insight: 'Right now nicotine decides when you hit. Tracking flips the script — you decide.', stat: 'Users report control within 2 weeks' },
+          'Better sleep': { insight: 'Nicotine is a stimulant that fragments your sleep cycle. Without it, deep sleep returns fast.', stat: 'Sleep quality improves in 3 days' }
+        };
+
         return (
           <div className="screen" key="s14">
             <ProgressBar current={14} total={20} />
-            <div className="spacer" style={{ flex: 0.2 }} />
-            <div className="text-center mb-24">
+            <div className="text-center mb-20">
               <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, lineHeight: 1.2 }}>
-                You're in the right place, {displayName}!
+                Here's how PuffDown helps you, {displayName}
               </h2>
+              <p className="text-muted" style={{ fontSize: 14 }}>Based on your goals</p>
             </div>
 
-            <div className="mb-24">
-              <p className="text-muted mb-12" style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>Your goals</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {(data.goals || []).map(g => (
-                  <div className="goal-chip" key={g}>
-                    <span>{GOAL_EMOJIS[g]}</span>
-                    <span>{g}</span>
+            {(data.goals || []).map((g, i) => {
+              const detail = goalDetails[g];
+              if (!detail) return null;
+              return (
+                <div key={g} className="card mb-12" style={{
+                  padding: 16, borderColor: 'rgba(45,212,191,0.15)',
+                  animation: `fadeInUp 0.4s ease-out ${i * 0.15}s both`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <span style={{ fontSize: 24 }}>{GOAL_EMOJIS[g]}</span>
+                    <span style={{ fontSize: 16, fontWeight: 600 }}>{g}</span>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.5, marginBottom: 8 }}>
+                    {detail.insight}
+                  </p>
+                  <p style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>
+                    {detail.stat}
+                  </p>
+                </div>
+              );
+            })}
 
-            <div className="card mb-24" style={{ padding: 16, borderColor: 'rgba(45,212,191,0.3)' }}>
-              <p className="text-muted" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600, marginBottom: 4 }}>Your mission</p>
-              <p style={{ fontSize: 17, fontWeight: 600 }}>
-                {goalLabels[data.longTermGoal] || 'Quit vaping'}
+            <div className="card mb-24" style={{
+              padding: 14, textAlign: 'center', marginTop: 8,
+              background: 'linear-gradient(135deg, rgba(45,212,191,0.06), rgba(134,239,172,0.06))',
+              borderColor: 'rgba(134,239,172,0.2)'
+            }}>
+              <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>
+                Your mission: <span style={{ color: 'var(--primary)' }}>{goalLabels[data.longTermGoal] || 'Quit vaping'}</span>
               </p>
-            </div>
-
-            <div className="card mb-24" style={{ padding: 16, background: 'linear-gradient(135deg, rgba(45,212,191,0.06), rgba(134,239,172,0.06))', borderColor: 'rgba(134,239,172,0.2)' }}>
-              <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.5, marginBottom: 8 }}>
-                Thousands have started with the same goals, and PuffDown got them there.
-              </p>
-              <p style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>
-                4.8 stars from 2,000+ users
+              <p style={{ fontSize: 13, color: 'var(--subtext)' }}>
+                Thousands started with the same goals and succeeded with PuffDown
               </p>
             </div>
 
