@@ -579,6 +579,16 @@
       return 22.5;
     }
 
+    // ── Progress bar (pure component) ──
+    function ProgressBar({ current, total }) {
+      const pct = Math.round((current / total) * 100);
+      return (
+        <div className="progress-bar-container">
+          <div className="progress-bar-fill" style={{ width: pct + '%' }} />
+        </div>
+      );
+    }
+
     // ── Goal emoji map ──
     const GOAL_EMOJIS = {
       'Breathe easier': '🫁',
@@ -667,11 +677,14 @@
         dailyPuffs: 150,
         vapingDuration: null,
         weeklySpend: 30,
+        spendPeriod: 'every2weeks',
+        spendRaw: 40,
         lifeImpact: 3,
         triggers: [],
         biggestStruggle: null,
         quitAttempts: null,
         onboardingComplete: false,
+        isPremium: false,
         ...(saved || {})
       });
 
@@ -695,22 +708,17 @@
       // Helper: display name or fallback
       const displayName = data.userName ? data.userName.split(' ')[0] : '';
 
-      // ── Progress bar helper ──
-      function ProgressBar({ current, total }) {
-        const pct = Math.round((current / total) * 100);
-        return (
-          <div className="progress-bar-container">
-            <div className="progress-bar-fill" style={{ width: pct + '%' }} />
-          </div>
-        );
-      }
+    // ════════════════════════════════════════
+    // PHASE 1: PINPOINT THE PROBLEM (0-10)
+    // ════════════════════════════════════════
 
-      // ════════════════════════════════════════
-      // PHASE 1: PINPOINT THE PROBLEM (0-10)
-      // ════════════════════════════════════════
-
-      // ── Screen 0: Welcome ──
+    // ── Screen 0: Welcome ──
       function WelcomeScreen() {
+        const [localName, setLocalName] = useState(data.userName);
+        const handleContinue = () => {
+          update('userName', localName);
+          next();
+        };
         return (
           <div className="screen" key="s0">
             <div className="spacer" />
@@ -726,20 +734,20 @@
                 className="name-input"
                 type="text"
                 placeholder="What's your name?"
-                value={data.userName}
-                onChange={e => update('userName', e.target.value)}
+                value={localName}
+                onChange={e => setLocalName(e.target.value)}
                 autoFocus
               />
             </div>
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next} disabled={!data.userName.trim()}>
+            <button className="btn btn-primary" onClick={handleContinue} disabled={!localName.trim()}>
               Let's Go
             </button>
           </div>
         );
       }
 
-      // ── Screen 1: Goals (multi-select, up to 3) ──
+    // ── Screen 1: Goals (multi-select, up to 3) ──
       function GoalsScreen() {
         const options = [
           'Breathe easier', 'Save money', 'Break the addiction', 'Mental clarity',
@@ -2173,6 +2181,36 @@
         NotificationScreen,    // 20 - Notification permission
         MainApp                // 21 - Main app
       ];
+
+      // ── Dev helpers (call from browser console) ──
+      window.devUnlock = () => {
+        setData(prev => ({
+          ...prev,
+          isPremium: true,
+          onboardingComplete: true,
+          startDate: prev.startDate || todayKey(),
+          puffLogs: prev.puffLogs || {}
+        }));
+        setScreen(TOTAL_ONBOARDING_SCREENS);
+        console.log('Premium unlocked — skipped to main app');
+      };
+      window.devSkipTo = (n) => {
+        setScreen(n);
+        console.log('Jumped to screen ' + n);
+      };
+      window.devReset = () => {
+        const fresh = {
+          userName: '', goals: [], longTermGoal: null,
+          vapeType: null, dailyPuffs: 150, vapingDuration: null,
+          weeklySpend: 30, spendPeriod: 'every2weeks', spendRaw: 40,
+          lifeImpact: 3, triggers: [], biggestStruggle: null,
+          quitAttempts: null, onboardingComplete: false, isPremium: false
+        };
+        saveData(fresh);
+        setData(fresh);
+        setScreen(0);
+        console.log('Reset to fresh state');
+      };
 
       const CurrentScreen = screens[screen] || MainApp;
       return <CurrentScreen />;

@@ -10,11 +10,11 @@
   "orientation": "portrait",
   "shortcuts": [
     {
-      "name": "Log a Puff",
+      "name": "Quick Log",
       "short_name": "Puff",
-      "description": "Quickly log a puff",
-      "url": "./index.html?action=log",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "description": "Tap the vape to log a puff",
+      "url": "./widget.html",
+      "icons": [{ "src": "vape-icon.png", "sizes": "192x192" }]
     }
   ],
   "icons": [

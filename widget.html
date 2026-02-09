@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0D1117">
+  <title>PuffDown Quick Log</title>
+  <link rel="apple-touch-icon" href="vape-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="vape-icon.png">
+  <style>
+    :root {
+      --bg: #0D1117;
+      --card: #161B22;
+      --primary: #2DD4BF;
+      --primary-dim: rgba(45,212,191,0.15);
+      --coral: #F87171;
+      --text: #FFFFFF;
+      --subtext: #9CA3AF;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'SF Pro Rounded', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(var(--safe-top) + 16px) 20px calc(var(--safe-bottom) + 24px);
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    /* Status text */
+    .status {
+      text-align: center;
+    }
+    .status .today-label {
+      font-size: 13px;
+      color: var(--subtext);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 4px;
+    }
+    .status .count {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text);
+      transition: transform 0.2s;
+    }
+    .status .count.bump {
+      transform: scale(1.15);
+    }
+    .status .target {
+      font-size: 15px;
+      color: var(--subtext);
+      margin-top: 6px;
+    }
+    .status .target span {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* The vape button */
+    .vape-btn {
+      position: relative;
+      width: 80px;
+      height: 280px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      filter: drop-shadow(0 0 20px rgba(45,212,191,0.15));
+      transition: filter 0.3s, transform 0.15s;
+    }
+    .vape-btn:active {
+      transform: scale(0.96);
+    }
+    .vape-btn.puffed {
+      filter: drop-shadow(0 0 40px rgba(45,212,191,0.5));
+    }
+
+    /* SVG vape pen */
+    .vape-body { fill: #1E2430; }
+    .vape-accent { fill: var(--primary); }
+    .vape-highlight { fill: #2A3140; }
+    .vape-dark { fill: #141820; }
+    .vape-ring { fill: #2A3140; stroke: #333B4A; stroke-width: 0.5; }
+    .vape-tip { fill: #0D1117; }
+    .vape-led {
+      fill: var(--primary);
+      opacity: 0.4;
+      transition: opacity 0.3s;
+    }
+    .vape-btn.puffed .vape-led {
+      opacity: 1;
+      filter: drop-shadow(0 0 6px var(--primary));
+    }
+
+    /* Cloud animation */
+    .cloud-container {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .cloud {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: rgba(45,212,191,0.25);
+      border-radius: 50%;
+      opacity: 0;
+    }
+    .cloud.puff {
+      animation: cloudRise 1s ease-out forwards;
+    }
+    @keyframes cloudRise {
+      0% { opacity: 0.6; transform: translate(0, 0) scale(0.5); }
+      100% { opacity: 0; transform: translate(var(--dx), -80px) scale(2.5); }
+    }
+
+    /* Confirmation toast */
+    .toast {
+      position: fixed;
+      top: calc(var(--safe-top) + 20px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: var(--card);
+      border: 1px solid rgba(45,212,191,0.3);
+      border-radius: 16px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--primary);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Over target warning */
+    .over-target .count { color: var(--coral); }
+    .over-target .vape-accent { fill: var(--coral); }
+    .over-target .vape-led { fill: var(--coral); }
+    .over-target .vape-btn { filter: drop-shadow(0 0 20px rgba(248,113,113,0.15)); }
+    .over-target .vape-btn.puffed { filter: drop-shadow(0 0 40px rgba(248,113,113,0.5)); }
+    .over-target .cloud.puff { background: rgba(248,113,113,0.25) !important; }
+
+    /* Open app link */
+    .open-app {
+      font-size: 14px;
+      color: var(--subtext);
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      transition: color 0.2s;
+    }
+    .open-app:active {
+      color: var(--primary);
+    }
+
+    /* Haptic hint text */
+    .hint {
+      font-size: 12px;
+      color: var(--subtext);
+      opacity: 0.5;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast">Puff logged</div>
+
+  <div class="container" id="main">
+    <div class="status" id="statusBlock">
+      <div class="today-label">Today's Puffs</div>
+      <div class="count" id="countDisplay">0</div>
+      <div class="target">target: <span id="targetDisplay">--</span></div>
+    </div>
+
+    <!-- Vape pen SVG button -->
+    <div class="vape-btn" id="vapeBtn" role="button" aria-label="Log a puff">
+      <div class="cloud-container" id="clouds"></div>
+      <svg viewBox="0 0 80 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Mouthpiece -->
+        <rect class="vape-tip" x="28" y="0" width="24" height="20" rx="6"/>
+        <rect class="vape-ring" x="25" y="18" width="30" height="8" rx="4"/>
+
+        <!-- Top cap -->
+        <rect class="vape-highlight" x="22" y="26" width="36" height="14" rx="5"/>
+
+        <!-- Main body -->
+        <rect class="vape-body" x="20" y="40" width="40" height="180" rx="8"/>
+
+        <!-- Accent stripe -->
+        <rect class="vape-accent" x="20" y="100" width="40" height="4" rx="2" opacity="0.7"/>
+        <rect class="vape-accent" x="20" y="110" width="40" height="2" rx="1" opacity="0.3"/>
+
+        <!-- Brand area -->
+        <rect class="vape-highlight" x="28" y="130" width="24" height="40" rx="4" opacity="0.3"/>
+        <!-- P letter -->
+        <text x="40" y="157" text-anchor="middle" fill="var(--primary)" font-size="18" font-weight="700" font-family="SF Pro Rounded, -apple-system, sans-serif" opacity="0.6">P</text>
+
+        <!-- Airflow ring -->
+        <rect class="vape-ring" x="22" y="220" width="36" height="6" rx="3"/>
+
+        <!-- Battery section -->
+        <rect class="vape-dark" x="20" y="226" width="40" height="40" rx="8"/>
+
+        <!-- LED indicator -->
+        <circle class="vape-led" cx="40" cy="246" r="4"/>
+
+        <!-- Bottom cap -->
+        <rect class="vape-ring" x="26" y="264" width="28" height="6" rx="3"/>
+
+        <!-- Charging port -->
+        <rect class="vape-dark" x="35" y="268" width="10" height="3" rx="1.5"/>
+      </svg>
+    </div>
+
+    <div class="hint">tap the vape to log</div>
+
+    <a href="./index.html" class="open-app">Open PuffDown</a>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'puffdown_data';
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch { return null; }
+    }
+
+    function saveData(d) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {}
+    }
+
+    function getToday() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    function getDailyTarget(data) {
+      if (!data || !data.startDate || !data.dailyPuffs) return null;
+      const start = new Date(data.startDate);
+      const now = new Date(getToday());
+      const elapsed = Math.floor((now - start) / 86400000);
+      return Math.max(Math.round(data.dailyPuffs - (10 * (elapsed + 1) / 45)), 1);
+    }
+
+    function render() {
+      const data = loadData();
+      const today = getToday();
+      const count = (data && data.puffLogs && data.puffLogs[today]) || 0;
+      const target = getDailyTarget(data);
+
+      document.getElementById('countDisplay').textContent = count;
+      document.getElementById('targetDisplay').textContent = target !== null ? target : '--';
+
+      if (target !== null && count > target) {
+        document.getElementById('main').classList.add('over-target');
+      } else {
+        document.getElementById('main').classList.remove('over-target');
+      }
+    }
+
+    function logPuff() {
+      const data = loadData();
+      if (!data || !data.onboardingComplete) {
+        window.location.href = './index.html';
+        return;
+      }
+
+      const today = getToday();
+      if (!data.puffLogs) data.puffLogs = {};
+      data.puffLogs[today] = (data.puffLogs[today] || 0) + 1;
+      if (!data.startDate) data.startDate = today;
+      saveData(data);
+
+      // Animate count
+      const countEl = document.getElementById('countDisplay');
+      countEl.classList.add('bump');
+      setTimeout(() => countEl.classList.remove('bump'), 200);
+
+      // Cloud particles
+      spawnClouds();
+
+      // LED flash
+      const btn = document.getElementById('vapeBtn');
+      btn.classList.add('puffed');
+      setTimeout(() => btn.classList.remove('puffed'), 600);
+
+      // Toast
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1500);
+
+      // Haptic
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      render();
+    }
+
+    function spawnClouds() {
+      const container = document.getElementById('clouds');
+      for (let i = 0; i < 6; i++) {
+        const cloud = document.createElement('div');
+        cloud.className = 'cloud';
+        cloud.style.setProperty('--dx', (Math.random() * 40 - 20) + 'px');
+        cloud.style.animationDelay = (Math.random() * 0.2) + 's';
+        cloud.style.left = (Math.random() * 20 - 10) + 'px';
+        container.appendChild(cloud);
+        cloud.classList.add('puff');
+        setTimeout(() => cloud.remove(), 1200);
+      }
+    }
+
+    // Init
+    render();
+
+    // Tap handler
+    document.getElementById('vapeBtn').addEventListener('click', logPuff);
+
+    // Auto-log if opened with ?action=log
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'log') {
+      logPuff();
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  </script>
+</body>
+</html>
