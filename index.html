@@ -269,6 +269,91 @@
     .text-center { text-align: center; }
     .text-muted { color: var(--subtext); }
     .text-primary { color: var(--primary); }
+
+    /* Tab bar */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--card);
+      border-top: 1px solid var(--card-border);
+      display: flex; justify-content: space-around;
+      padding: 8px 0 calc(var(--safe-bottom) + 8px);
+      z-index: 100;
+    }
+    .tab-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; padding: 4px 16px;
+      background: none; border: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      font-family: inherit;
+    }
+    .tab-item .tab-icon { font-size: 22px; line-height: 1; }
+    .tab-item .tab-label {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--dark-grey); transition: color 0.15s;
+    }
+    .tab-item.active .tab-label { color: var(--primary); }
+
+    /* Main app screen with tab bar */
+    .screen-with-tabs {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      padding: calc(var(--safe-top) + 24px) 20px 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-content {
+      flex: 1; padding-bottom: calc(70px + var(--safe-bottom));
+    }
+
+    /* Timeline milestone cards */
+    .milestone-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 16px;
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 12px; transition: opacity 0.2s;
+    }
+    .milestone-card.achieved { border-color: rgba(134,239,172,0.3); }
+    .milestone-card.next { border-color: var(--gold); }
+    .milestone-card.future { opacity: 0.5; }
+    .milestone-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .milestone-card.achieved .milestone-icon { background: var(--mint-dim); }
+    .milestone-card.next .milestone-icon { background: var(--gold-dim); }
+    .milestone-card.future .milestone-icon { background: var(--card-border); }
+    .milestone-badge {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 2px 8px; border-radius: 6px;
+      display: inline-block; margin-top: 4px;
+    }
+    .milestone-card.achieved .milestone-badge { background: var(--mint-dim); color: var(--mint); }
+    .milestone-card.next .milestone-badge { background: var(--gold-dim); color: var(--gold); }
+
+    /* Learn fact cards */
+    .fact-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 20px;
+      margin-bottom: 12px;
+    }
+    .fact-card .fact-emoji {
+      font-size: 32px; margin-bottom: 10px; display: block;
+    }
+    .fact-card .fact-title {
+      font-size: 16px; font-weight: 600; margin-bottom: 6px;
+    }
+    .fact-card .fact-body {
+      font-size: 14px; color: var(--subtext); line-height: 1.5;
+    }
+
+    /* Daily fact card */
+    .daily-fact {
+      background: linear-gradient(135deg, rgba(45,212,191,0.08), rgba(134,239,172,0.08));
+      border: 1px solid rgba(45,212,191,0.2);
+      border-radius: 16px; padding: 16px;
+    }
   </style>
 </head>
 <body>
@@ -331,6 +416,65 @@
       '30_50': 40,
       '50_plus': 65
     };
+
+    // ── Health recovery timeline ──
+    const HEALTH_TIMELINE = [
+      { time: '20 min', minutes: 20, title: 'Heart rate normalizes', desc: 'Your heart rate and blood pressure begin to drop back to normal levels.', emoji: '❤️' },
+      { time: '8 hours', minutes: 480, title: 'Oxygen levels recover', desc: 'Carbon monoxide levels in your blood drop. Oxygen levels return to normal.', emoji: '🫁' },
+      { time: '24 hours', minutes: 1440, title: 'Heart attack risk drops', desc: 'Your risk of a heart attack begins to decrease as your cardiovascular system starts healing.', emoji: '💪' },
+      { time: '48 hours', minutes: 2880, title: 'Taste & smell return', desc: 'Nerve endings start regrowing. Your sense of taste and smell begin to sharpen.', emoji: '👃' },
+      { time: '72 hours', minutes: 4320, title: 'Breathing gets easier', desc: 'Bronchial tubes relax and lung capacity starts to increase. Breathing feels easier.', emoji: '🌬️' },
+      { time: '2 weeks', minutes: 20160, title: 'Circulation improves', desc: 'Blood flow improves throughout your body. Walking and exercise become easier.', emoji: '🏃' },
+      { time: '1 month', minutes: 43200, title: 'Immune system strengthens', desc: 'Your immune system begins to recover. You get sick less often.', emoji: '🛡️' },
+      { time: '3 months', minutes: 129600, title: 'Lung function up 30%', desc: 'Your lung function has significantly improved. Coughing and shortness of breath decrease.', emoji: '📈' },
+      { time: '1 year', minutes: 525600, title: 'Heart disease risk halved', desc: 'Your risk of coronary heart disease is now half that of a vaper. A massive milestone.', emoji: '🏆' }
+    ];
+
+    // ── Vape education facts ──
+    const VAPE_FACTS = [
+      { emoji: '🧪', title: 'What\'s in vape juice?', body: 'Vape liquid contains propylene glycol, vegetable glycerin, nicotine, and flavoring chemicals. When heated, these produce formaldehyde, acrolein, and heavy metals like lead and nickel — none of which belong in your lungs.' },
+      { emoji: '🧠', title: 'Nicotine & your brain', body: 'A single JUUL pod contains as much nicotine as 20 cigarettes. Nicotine rewires your brain\'s reward system, making it harder to feel pleasure from everyday activities. Young brains are especially vulnerable.' },
+      { emoji: '🫁', title: 'Popcorn lung risk', body: 'Diacetyl, a flavoring chemical found in many vape juices, is linked to bronchiolitis obliterans ("popcorn lung") — a serious, irreversible condition that scars the tiny air sacs in your lungs.' },
+      { emoji: '❤️', title: 'Heart damage', body: 'Nicotine raises blood pressure, spikes adrenaline, and increases heart rate. Studies show vaping just once can stiffen arteries. Long-term use significantly raises the risk of heart attack and stroke.' },
+      { emoji: '🛡️', title: 'Weakened immunity', body: 'Vaping suppresses the immune response in your nasal passages and lungs. Regular vapers are more susceptible to respiratory infections, including flu and pneumonia.' },
+      { emoji: '🧬', title: 'DNA damage', body: 'Research has found that e-cigarette vapor damages DNA in the mouth, lungs, and bladder. DNA damage is the first step toward cancer. The longer you vape, the more damage accumulates.' },
+      { emoji: '💨', title: 'Secondhand vapor', body: 'Exhaled vapor contains ultrafine particles, nicotine, heavy metals, and volatile organic compounds. People around you — especially children — breathe these in. "It\'s just water vapor" is a myth.' },
+      { emoji: '💰', title: 'The cost adds up', body: 'The average vaper spends $1,000–$2,500 per year. That\'s a vacation, a new phone, or months of groceries. Quitting puts real money back in your pocket — starting on day one.' },
+      { emoji: '😰', title: 'Anxiety & depression link', body: 'While many vape to "relieve stress," nicotine actually increases anxiety and depression over time. The relief you feel is just the withdrawal easing temporarily — a cycle that gets worse.' },
+      { emoji: '😬', title: 'Oral health damage', body: 'Vaping dries out your mouth, kills healthy bacteria, and inflames gums. This leads to cavities, gum disease, and bad breath. Some users develop painful mouth sores and cracked lips.' },
+      { emoji: '🏋️', title: 'Fitness impact', body: 'Vaping reduces lung capacity, restricts blood flow, and increases resting heart rate. Athletes who vape notice decreased endurance, slower recovery, and increased breathlessness during exercise.' },
+      { emoji: '😴', title: 'Sleep disruption', body: 'Nicotine is a stimulant that disrupts your sleep cycle. Vapers take longer to fall asleep, sleep less deeply, and wake up more tired. Poor sleep worsens mood, focus, and cravings.' }
+    ];
+
+    // ── Daily tips / facts (rotates by day of year) ──
+    const DAILY_FACTS = [
+      'Every puff you skip is a win. Your body starts healing within 20 minutes of your last hit.',
+      'Nicotine cravings peak at 3-5 minutes. Distract yourself and they pass.',
+      'A JUUL pod has as much nicotine as 20 cigarettes. Each puff down is progress.',
+      'Your lungs start clearing mucus within 72 hours of reducing intake.',
+      'Vaping can deliver heavy metals like lead directly to your lungs.',
+      'Quitting saves the average vaper over $1,500 per year.',
+      'Nicotine narrows your blood vessels, reducing oxygen to every organ.',
+      'Your sense of taste and smell start improving within 48 hours.',
+      'Exercise is one of the most effective craving-busters. Even a short walk helps.',
+      'Vaping before bed disrupts deep sleep. Better sleep starts when you quit.',
+      'Formaldehyde — yes, embalming fluid — is produced when vape juice is heated.',
+      'Your heart rate begins normalizing just 20 minutes after your last puff.',
+      'Diacetyl in vape flavors is linked to irreversible lung damage.',
+      'Drinking water helps flush nicotine from your system faster.',
+      'Stress relief from vaping is an illusion — nicotine actually increases anxiety long-term.'
+    ];
+
+    // ── Notification messages ──
+    const NOTIF_MESSAGES = [
+      { title: 'How are you doing?', body: 'Tap to log a puff and stay on track.' },
+      { title: 'Stay strong!', body: 'Every puff you skip is healing your body.' },
+      { title: 'Check in time', body: 'Log your puffs to keep your streak going.' },
+      { title: 'You\'re doing great', body: 'Tap to update your progress for today.' },
+      { title: 'Quick check-in', body: 'How\'s your day going? Tap to log.' },
+      { title: 'Keep it up!', body: 'Your lungs are thanking you. Tap to log.' },
+      { title: 'Reminder', body: 'Don\'t forget to track — awareness is power.' }
+    ];
 
     // ── App ──
     function App() {
@@ -741,6 +885,10 @@
         const finishOnboarding = () => {
           setData(prev => ({ ...prev, onboardingComplete: true, startDate: todayKey(), puffLogs: {} }));
           setScreen(11);
+          // Request notification permission after onboarding
+          if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+          }
         };
 
         return (
@@ -837,6 +985,7 @@
 
       // ── Main App (post-onboarding) ──
       function MainApp() {
+        const [activeTab, setActiveTab] = useState('dashboard');
         const startDate = data.startDate || todayKey();
         const puffLogs = data.puffLogs || {};
         const today = todayKey();
@@ -892,6 +1041,64 @@
           }
         }, [logPuff]);
 
+        // Listen for LOG_PUFF postMessage from service worker
+        useEffect(() => {
+          const handler = (event) => {
+            if (event.data && event.data.type === 'LOG_PUFF') {
+              logPuff();
+            }
+          };
+          navigator.serviceWorker && navigator.serviceWorker.addEventListener('message', handler);
+          return () => {
+            navigator.serviceWorker && navigator.serviceWorker.removeEventListener('message', handler);
+          };
+        }, [logPuff]);
+
+        // Request notification permission for existing users (3s delay)
+        useEffect(() => {
+          if ('Notification' in window && Notification.permission === 'default') {
+            const t = setTimeout(() => Notification.requestPermission(), 3000);
+            return () => clearTimeout(t);
+          }
+        }, []);
+
+        // Schedule reminder notifications every 2 hours
+        useEffect(() => {
+          if (!('Notification' in window) || Notification.permission !== 'granted') return;
+          if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+
+          const NOTIF_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours
+          const LAST_NOTIF_KEY = 'puffdown_last_notif';
+
+          function scheduleNext() {
+            const lastNotif = parseInt(localStorage.getItem(LAST_NOTIF_KEY) || '0', 10);
+            const now = Date.now();
+            const timeSinceLast = now - lastNotif;
+            const delay = timeSinceLast >= NOTIF_INTERVAL ? 0 : NOTIF_INTERVAL - timeSinceLast;
+
+            return setTimeout(async () => {
+              try {
+                const reg = await navigator.serviceWorker.ready;
+                const msgIndex = Math.floor(Math.random() * NOTIF_MESSAGES.length);
+                const msg = NOTIF_MESSAGES[msgIndex];
+                await reg.showNotification(msg.title, {
+                  body: msg.body,
+                  icon: './icon-192.png',
+                  badge: './icon-192.png',
+                  tag: 'puffdown-reminder',
+                  renotify: true
+                });
+                localStorage.setItem(LAST_NOTIF_KEY, String(Date.now()));
+              } catch (e) {}
+              // Schedule the next one
+              timerId = scheduleNext();
+            }, Math.max(delay, 60000)); // At least 1 min delay to avoid instant fire
+          }
+
+          let timerId = scheduleNext();
+          return () => clearTimeout(timerId);
+        }, []);
+
         const resetOnboarding = () => {
           const fresh = {
             vapeType: null, dailyPuffs: 150,
@@ -903,58 +1110,158 @@
           setScreen(0);
         };
 
+        // Daily fact based on day of year
+        const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+        const dailyFact = DAILY_FACTS[dayOfYear % DAILY_FACTS.length];
+
+        // Minutes elapsed since start date
+        const minutesSinceStart = startDate
+          ? (Date.now() - new Date(startDate + 'T00:00:00').getTime()) / 60000
+          : 0;
+
+        // Find the next milestone index
+        const nextMilestoneIdx = HEALTH_TIMELINE.findIndex(m => m.minutes > minutesSinceStart);
+
+        // ── Dashboard Tab ──
+        function DashboardTab() {
+          return (
+            <div className="tab-content">
+              <div className="text-center mb-8">
+                <p className="text-muted" style={{ fontSize: 13 }}>{todayStr}</p>
+                <h2 style={{ fontSize: 28, fontWeight: 700, marginTop: 4, lineHeight: 1.1 }}>Day {elapsed + 1}</h2>
+              </div>
+
+              <div style={{ height: 16 }} />
+
+              <div className="progress-ring-container mb-24">
+                <svg viewBox="0 0 200 200">
+                  <circle className="progress-ring-bg" cx="100" cy="100" r="88" />
+                  <circle
+                    className="progress-ring-fill"
+                    cx="100" cy="100" r="88"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    style={overLimit ? { stroke: 'var(--coral)' } : {}}
+                  />
+                </svg>
+                <div className="progress-ring-text">
+                  <span style={{ fontSize: 48, fontWeight: 700, color: overLimit ? 'var(--coral)' : 'var(--text)' }}>{puffsToday}</span>
+                  <span className="text-muted" style={{ fontSize: 15 }}>/ {dailyTarget} puffs</span>
+                </div>
+              </div>
+
+              <div className="stat-row mb-24">
+                <div className="stat-box">
+                  <div className="stat-value" style={{ color: 'var(--primary)' }}>{streak}</div>
+                  <div className="stat-label">Day Streak</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-value" style={{ color: 'var(--gold)' }}>${saved.toFixed(0)}</div>
+                  <div className="stat-label">Saved</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-value" style={{ color: 'var(--mint)' }}>Day {elapsed + 1}</div>
+                  <div className="stat-label">Journey</div>
+                </div>
+              </div>
+
+              <button className="btn btn-primary mb-16" onClick={logPuff}>
+                + Log a Puff
+              </button>
+
+              <div className="daily-fact mb-16">
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+                  Daily Fact
+                </p>
+                <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.5 }}>{dailyFact}</p>
+              </div>
+
+              <div className="text-center">
+                <button className="link-muted" onClick={resetOnboarding} style={{ fontSize: 12 }}>
+                  Reset Onboarding (dev)
+                </button>
+              </div>
+              <div style={{ height: 16 }} />
+            </div>
+          );
+        }
+
+        // ── Timeline Tab ──
+        function TimelineTab() {
+          return (
+            <div className="tab-content">
+              <div className="text-center mb-24">
+                <h2 style={{ fontSize: 24, fontWeight: 700, lineHeight: 1.1 }}>Health Timeline</h2>
+                <p className="text-muted" style={{ fontSize: 13, marginTop: 6 }}>
+                  Your body is healing. Here's what's happening.
+                </p>
+              </div>
+              {HEALTH_TIMELINE.map((milestone, i) => {
+                const achieved = minutesSinceStart >= milestone.minutes;
+                const isNext = i === nextMilestoneIdx;
+                const status = achieved ? 'achieved' : isNext ? 'next' : 'future';
+                return (
+                  <div className={`milestone-card ${status}`} key={i}>
+                    <div className="milestone-icon">{milestone.emoji}</div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 12, color: 'var(--subtext)', marginBottom: 2 }}>{milestone.time}</p>
+                      <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{milestone.title}</p>
+                      <p style={{ fontSize: 13, color: 'var(--subtext)', lineHeight: 1.4 }}>{milestone.desc}</p>
+                      {achieved && <span className="milestone-badge">Achieved</span>}
+                      {isNext && <span className="milestone-badge">Next</span>}
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{ height: 16 }} />
+            </div>
+          );
+        }
+
+        // ── Learn Tab ──
+        function LearnTab() {
+          return (
+            <div className="tab-content">
+              <div className="text-center mb-24">
+                <h2 style={{ fontSize: 24, fontWeight: 700, lineHeight: 1.1 }}>Learn</h2>
+                <p className="text-muted" style={{ fontSize: 13, marginTop: 6 }}>
+                  Knowledge is power. Understand what vaping does.
+                </p>
+              </div>
+              {VAPE_FACTS.map((fact, i) => (
+                <div className="fact-card" key={i}>
+                  <span className="fact-emoji">{fact.emoji}</span>
+                  <p className="fact-title">{fact.title}</p>
+                  <p className="fact-body">{fact.body}</p>
+                </div>
+              ))}
+              <div style={{ height: 16 }} />
+            </div>
+          );
+        }
+
         return (
-          <div className="screen" key={11} style={{ padding: 'calc(var(--safe-top) + 24px) 20px calc(var(--safe-bottom) + 24px)' }}>
-            <div className="text-center mb-8">
-              <p className="text-muted" style={{ fontSize: 13 }}>{todayStr}</p>
-              <h2 style={{ fontSize: 28, fontWeight: 700, marginTop: 4, lineHeight: 1.1 }}>Day {elapsed + 1}</h2>
+          <React.Fragment>
+            <div className="screen-with-tabs" key={11}>
+              {activeTab === 'dashboard' && <DashboardTab />}
+              {activeTab === 'timeline' && <TimelineTab />}
+              {activeTab === 'learn' && <LearnTab />}
             </div>
-
-            <div className="spacer" style={{ flex: 0.15 }} />
-
-            <div className="progress-ring-container mb-24">
-              <svg viewBox="0 0 200 200">
-                <circle className="progress-ring-bg" cx="100" cy="100" r="88" />
-                <circle
-                  className="progress-ring-fill"
-                  cx="100" cy="100" r="88"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={offset}
-                  style={overLimit ? { stroke: 'var(--coral)' } : {}}
-                />
-              </svg>
-              <div className="progress-ring-text">
-                <span style={{ fontSize: 48, fontWeight: 700, color: overLimit ? 'var(--coral)' : 'var(--text)' }}>{puffsToday}</span>
-                <span className="text-muted" style={{ fontSize: 15 }}>/ {dailyTarget} puffs</span>
-              </div>
-            </div>
-
-            <div className="stat-row mb-32">
-              <div className="stat-box">
-                <div className="stat-value" style={{ color: 'var(--primary)' }}>{streak}</div>
-                <div className="stat-label">Day Streak</div>
-              </div>
-              <div className="stat-box">
-                <div className="stat-value" style={{ color: 'var(--gold)' }}>${saved.toFixed(0)}</div>
-                <div className="stat-label">Saved</div>
-              </div>
-              <div className="stat-box">
-                <div className="stat-value" style={{ color: 'var(--mint)' }}>Day {elapsed + 1}</div>
-                <div className="stat-label">Journey</div>
-              </div>
-            </div>
-
-            <button className="btn btn-primary mb-16" onClick={logPuff}>
-              + Log a Puff
-            </button>
-
-            <div className="text-center">
-              <button className="link-muted" onClick={resetOnboarding} style={{ fontSize: 12 }}>
-                Reset Onboarding (dev)
+            <div className="tab-bar">
+              <button className={`tab-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+                <span className="tab-icon">📊</span>
+                <span className="tab-label">Dashboard</span>
+              </button>
+              <button className={`tab-item ${activeTab === 'timeline' ? 'active' : ''}`} onClick={() => setActiveTab('timeline')}>
+                <span className="tab-icon">⏱️</span>
+                <span className="tab-label">Timeline</span>
+              </button>
+              <button className={`tab-item ${activeTab === 'learn' ? 'active' : ''}`} onClick={() => setActiveTab('learn')}>
+                <span className="tab-icon">📚</span>
+                <span className="tab-label">Learn</span>
               </button>
             </div>
-            <div className="spacer" />
-          </div>
+          </React.Fragment>
         );
       }
 

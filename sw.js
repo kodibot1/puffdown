@@ -1,4 +1,4 @@
-const CACHE_NAME = 'puffdown-v3';
+const CACHE_NAME = 'puffdown-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -48,5 +48,23 @@ self.addEventListener('fetch', e => {
       }
       return res;
     }))
+  );
+});
+
+// Handle notification tap
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      // If app is already open, focus it and send message
+      for (const client of clientList) {
+        if (client.visibilityState === 'visible' || client.url.includes('index.html') || client.url.endsWith('/')) {
+          client.postMessage({ type: 'LOG_PUFF' });
+          return client.focus();
+        }
+      }
+      // Otherwise open the app with action=log
+      return clients.openWindow('./index.html?action=log');
+    })
   );
 });
