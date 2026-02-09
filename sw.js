@@ -1,4 +1,4 @@
-const CACHE_NAME = 'puffdown-v1';
+const CACHE_NAME = 'puffdown-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -25,6 +25,21 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  // Network-first for HTML so updates show immediately
+  if (e.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Cache-first for other assets
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(res => {
       if (res.ok && e.request.method === 'GET') {
