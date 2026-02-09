@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0D1117">
+  <title>PuffDown</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <style>
+    :root {
+      --bg: #0D1117;
+      --card: #161B22;
+      --card-border: #21262D;
+      --primary: #2DD4BF;
+      --primary-dim: rgba(45,212,191,0.12);
+      --mint: #86EFAC;
+      --mint-dim: rgba(134,239,172,0.12);
+      --gold: #FBBF24;
+      --gold-dim: rgba(251,191,36,0.12);
+      --coral: #F87171;
+      --text: #FFFFFF;
+      --subtext: #9CA3AF;
+      --dark-grey: #6B7280;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'SF Pro Rounded', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+      line-height: 1.3;
+    }
+    .screen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      padding: calc(var(--safe-top) + 16px) 20px calc(var(--safe-bottom) + 24px);
+      animation: slideInRight 0.3s ease-out;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes countPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Progress bar */
+    .progress-bar-container {
+      width: 100%; height: 4px;
+      background: var(--card-border); border-radius: 2px;
+      margin-bottom: 32px;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 2px;
+      background: var(--primary);
+      transition: width 0.4s ease;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%; height: 56px;
+      border: none; border-radius: 16px;
+      font-family: inherit;
+      font-size: 17px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary {
+      background: var(--primary); color: #FFFFFF;
+    }
+    .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+    .btn-primary:disabled {
+      background: var(--card-border); color: var(--dark-grey);
+      cursor: default; transform: none;
+    }
+    .btn-outline {
+      background: transparent; color: var(--primary);
+      border: 1.5px solid var(--primary);
+    }
+    .btn-outline:active { background: var(--primary-dim); }
+
+    /* Cards */
+    .card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 16px;
+    }
+    .option-card {
+      background: var(--card); border: 1.5px solid var(--card-border);
+      border-radius: 14px; padding: 16px 18px;
+      cursor: pointer; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .option-card:active { transform: scale(0.98); }
+    .option-card.selected {
+      border-color: var(--primary);
+      border-width: 2px;
+    }
+    .option-card.selected .label { color: var(--primary); }
+    .option-card .emoji { font-size: 28px; flex-shrink: 0; }
+    .option-card .label {
+      font-size: 15px; font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    /* Option grid (2x2) */
+    .option-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .option-grid .option-card {
+      flex-direction: column; text-align: center;
+      padding: 20px 12px; gap: 10px;
+      min-height: 52px;
+    }
+    .option-grid .option-card .emoji { font-size: 36px; }
+
+    /* Option stack */
+    .option-stack { display: flex; flex-direction: column; gap: 12px; }
+
+    /* Range slider */
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; height: 6px;
+      background: var(--card-border); border-radius: 3px; outline: none;
+      margin: 20px 0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 28px; height: 28px;
+      background: var(--primary); border-radius: 50%;
+      cursor: pointer; border: 3px solid var(--bg);
+      box-shadow: 0 0 12px rgba(45,212,191,0.35);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 28px; height: 28px;
+      background: var(--primary); border-radius: 50%;
+      cursor: pointer; border: 3px solid var(--bg);
+    }
+
+    /* Progress ring (SVG) */
+    .progress-ring-container {
+      position: relative; width: 200px; height: 200px;
+      margin: 0 auto;
+    }
+    .progress-ring-container svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .progress-ring-bg { fill: none; stroke: var(--card-border); stroke-width: 8; }
+    .progress-ring-fill {
+      fill: none; stroke: var(--primary); stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.8s ease-in-out;
+    }
+    .progress-ring-text {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+
+    /* Stat boxes */
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .stat-box {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 14px 10px; text-align: center;
+    }
+    .stat-box .stat-value {
+      font-size: 22px; font-weight: 700; color: var(--primary);
+    }
+    .stat-box .stat-label {
+      font-size: 11px; color: var(--subtext); margin-top: 4px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    /* Paywall pricing cards */
+    .pricing-card {
+      background: var(--card); border: 1.5px solid var(--card-border);
+      border-radius: 16px; padding: 20px;
+      cursor: pointer; transition: all 0.15s;
+      position: relative; text-align: center;
+    }
+    .pricing-card:active { transform: scale(0.98); }
+    .pricing-card.selected {
+      border-color: var(--primary);
+      border-width: 2px;
+    }
+    .pricing-card .badge {
+      position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+      background: var(--primary); color: var(--bg);
+      font-size: 11px; font-weight: 700; padding: 3px 12px;
+      border-radius: 8px; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .pricing-card .badge-gold {
+      background: var(--gold); color: var(--bg);
+    }
+    .pricing-card .plan-name {
+      font-size: 14px; color: var(--subtext); margin-bottom: 6px;
+    }
+    .pricing-card .plan-price {
+      font-size: 28px; font-weight: 700;
+    }
+    .pricing-card .plan-period {
+      font-size: 13px; color: var(--subtext);
+    }
+
+    /* Feature row */
+    .feature-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 0;
+    }
+    .feature-row + .feature-row { border-top: 1px solid var(--card-border); }
+    .feature-check {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--mint-dim);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--mint); font-size: 14px; font-weight: 700;
+    }
+
+    /* Step circles (how it works) */
+    .step-item {
+      display: flex; gap: 16px; align-items: flex-start;
+      opacity: 0; animation: fadeInUp 0.4s ease-out forwards;
+    }
+    .step-item:nth-child(1) { animation-delay: 0.1s; }
+    .step-item:nth-child(2) { animation-delay: 0.3s; }
+    .step-item:nth-child(3) { animation-delay: 0.5s; }
+    .step-circle {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--primary-dim); border: 1.5px solid var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: var(--primary); flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    /* Links */
+    .link-muted {
+      color: var(--dark-grey); font-size: 13px;
+      font-family: inherit;
+      text-decoration: none; cursor: pointer;
+      background: none; border: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .link-muted:active { opacity: 0.6; }
+
+    /* Spacer helpers */
+    .spacer { flex: 1; }
+    .mb-8 { margin-bottom: 8px; }
+    .mb-12 { margin-bottom: 12px; }
+    .mb-16 { margin-bottom: 16px; }
+    .mb-20 { margin-bottom: 20px; }
+    .mb-24 { margin-bottom: 24px; }
+    .mb-32 { margin-bottom: 32px; }
+    .mt-auto { margin-top: auto; }
+    .text-center { text-align: center; }
+    .text-muted { color: var(--subtext); }
+    .text-primary { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    // ── Storage helpers ──
+    const STORAGE_KEY = 'puffdown_data';
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch { return null; }
+    }
+    function saveData(d) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {}
+    }
+
+    // ── Count-up animation hook ──
+    function useCountUp(target, duration = 1500, delay = 0) {
+      const [value, setValue] = useState(0);
+      const ref = useRef();
+
+      useEffect(() => {
+        let start = null;
+        let animId;
+        const timeout = setTimeout(() => {
+          const step = (ts) => {
+            if (!start) start = ts;
+            const elapsed = ts - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setValue(Math.round(target * eased));
+            if (progress < 1) {
+              animId = requestAnimationFrame(step);
+            }
+          };
+          animId = requestAnimationFrame(step);
+        }, delay);
+
+        return () => {
+          clearTimeout(timeout);
+          if (animId) cancelAnimationFrame(animId);
+        };
+      }, [target, duration, delay]);
+
+      return value;
+    }
+
+    // ── Spend ranges → midpoint weekly $ ──
+    const SPEND_MAP = {
+      under_15: 10,
+      '15_30': 22.5,
+      '30_50': 40,
+      '50_plus': 65
+    };
+
+    // ── App ──
+    function App() {
+      const saved = loadData();
+      const [screen, setScreen] = useState(
+        saved && saved.onboardingComplete ? 11 : 0
+      );
+      const [data, setData] = useState({
+        vapeType: null,
+        dailyPuffs: 150,
+        weeklySpend: null,
+        biggestStruggle: null,
+        onboardingComplete: false,
+        ...(saved || {})
+      });
+
+      useEffect(() => { saveData(data); }, [data]);
+
+      const update = (key, val) => setData(prev => ({ ...prev, [key]: val }));
+      const next = () => setScreen(s => s + 1);
+
+      // ── Screen 0: Welcome ──
+      function WelcomeScreen() {
+        return (
+          <div className="screen" key={0}>
+            <div className="spacer" />
+            <div className="text-center mb-32">
+              <div style={{ fontSize: 80, marginBottom: 24 }}>🫁</div>
+              <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12, lineHeight: 1.1 }}>
+                Ready to take control?
+              </h1>
+              <p className="text-muted" style={{ fontSize: 15, lineHeight: 1.3 }}>
+                PuffDown helps you quit vaping with a personalized plan backed by science.
+              </p>
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Let's Go</button>
+          </div>
+        );
+      }
+
+      // ── Screen 1: Vape Type ──
+      function VapeTypeScreen() {
+        const types = [
+          { key: 'disposable', emoji: '🚬', label: 'Disposable' },
+          { key: 'pod', emoji: '💨', label: 'Pod System' },
+          { key: 'mod', emoji: '🔋', label: 'Mod / Tank' },
+          { key: 'multiple', emoji: '🔀', label: 'Multiple' }
+        ];
+        return (
+          <div className="screen" key={1}>
+            <div className="progress-bar-container">
+              <div className="progress-bar-fill" style={{ width: '25%' }} />
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>What do you vape?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 13 }}>This helps us personalize your quit plan</p>
+            <div className="option-grid mb-32">
+              {types.map(t => (
+                <div
+                  key={t.key}
+                  className={`option-card ${data.vapeType === t.key ? 'selected' : ''}`}
+                  onClick={() => update('vapeType', t.key)}
+                >
+                  <span className="emoji">{t.emoji}</span>
+                  <span className="label">{t.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next} disabled={!data.vapeType}>
+              Continue
+            </button>
+          </div>
+        );
+      }
+
+      // ── Screen 2: Daily Puffs ──
+      function DailyPuffsScreen() {
+        return (
+          <div className="screen" key={2}>
+            <div className="progress-bar-container">
+              <div className="progress-bar-fill" style={{ width: '50%' }} />
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>How much do you puff daily?</h2>
+            <p className="text-muted mb-32" style={{ fontSize: 13 }}>Estimate your average — it doesn't need to be exact</p>
+            <div className="text-center mb-16">
+              <span style={{ fontSize: 48, fontWeight: 700, color: 'var(--primary)' }}>
+                {data.dailyPuffs}
+              </span>
+              <span className="text-muted" style={{ fontSize: 15, marginLeft: 8 }}>puffs/day</span>
+            </div>
+            <input
+              type="range"
+              min={10} max={500} step={10}
+              value={data.dailyPuffs}
+              onChange={e => update('dailyPuffs', Number(e.target.value))}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 32 }}>
+              <span className="text-muted" style={{ fontSize: 13 }}>10</span>
+              <span className="text-muted" style={{ fontSize: 13 }}>500</span>
+            </div>
+            <p className="text-muted text-center mb-32" style={{ fontSize: 13 }}>
+              {data.dailyPuffs < 50 ? 'Light use — great starting point' :
+               data.dailyPuffs < 150 ? 'Moderate use — very manageable' :
+               data.dailyPuffs < 300 ? 'Heavy use — we\'ve helped thousands like you' :
+               'Very heavy use — your plan will be extra gradual'}
+            </p>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Continue</button>
+          </div>
+        );
+      }
+
+      // ── Screen 3: Weekly Spend ──
+      function WeeklySpendScreen() {
+        const options = [
+          { key: 'under_15', label: 'Under $15/week', emoji: '💵' },
+          { key: '15_30', label: '$15 – $30/week', emoji: '💰' },
+          { key: '30_50', label: '$30 – $50/week', emoji: '💸' },
+          { key: '50_plus', label: '$50+/week', emoji: '🤯' }
+        ];
+        return (
+          <div className="screen" key={3}>
+            <div className="progress-bar-container">
+              <div className="progress-bar-fill" style={{ width: '75%' }} />
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>How much do you spend on vaping?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 13 }}>We'll show you how much you can save</p>
+            <div className="option-stack mb-32">
+              {options.map(o => (
+                <div
+                  key={o.key}
+                  className={`option-card ${data.weeklySpend === o.key ? 'selected' : ''}`}
+                  onClick={() => update('weeklySpend', o.key)}
+                >
+                  <span className="emoji">{o.emoji}</span>
+                  <span className="label">{o.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next} disabled={!data.weeklySpend}>
+              Continue
+            </button>
+          </div>
+        );
+      }
+
+      // ── Screen 4: Biggest Struggle ──
+      function BiggestStruggleScreen() {
+        const options = [
+          { key: 'cravings', label: 'Intense cravings', emoji: '🧠' },
+          { key: 'habit', label: 'It\'s just a habit', emoji: '🔁' },
+          { key: 'social', label: 'Social pressure', emoji: '👥' },
+          { key: 'stress', label: 'Stress relief', emoji: '😤' }
+        ];
+        return (
+          <div className="screen" key={4}>
+            <div className="progress-bar-container">
+              <div className="progress-bar-fill" style={{ width: '100%' }} />
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>What's your biggest struggle?</h2>
+            <p className="text-muted mb-24" style={{ fontSize: 13 }}>Our AI coach will focus on this area</p>
+            <div className="option-stack mb-32">
+              {options.map(o => (
+                <div
+                  key={o.key}
+                  className={`option-card ${data.biggestStruggle === o.key ? 'selected' : ''}`}
+                  onClick={() => update('biggestStruggle', o.key)}
+                >
+                  <span className="emoji">{o.emoji}</span>
+                  <span className="label">{o.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next} disabled={!data.biggestStruggle}>
+              Continue
+            </button>
+          </div>
+        );
+      }
+
+      // ── Screen 5: Personal Plan (Conversion) ──
+      function PersonalPlanScreen() {
+        const weeklyMid = SPEND_MAP[data.weeklySpend] || 22.5;
+        const savingsTarget = Math.round(weeklyMid * 12);
+        const quitDate = new Date();
+        quitDate.setDate(quitDate.getDate() + 45);
+        const quitDateStr = quitDate.toLocaleDateString('en-US', {
+          month: 'long', day: 'numeric', year: 'numeric'
+        });
+
+        const animDays = useCountUp(45, 1500, 200);
+        const animSavings = useCountUp(savingsTarget, 1500, 500);
+        const animHealth = useCountUp(30, 1500, 800);
+
+        return (
+          <div className="screen" key={5}>
+            <div className="spacer" style={{ flex: 0.3 }} />
+            <div className="text-center mb-32">
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
+              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>
+                Your PuffDown plan is ready
+              </h2>
+              <p className="text-muted" style={{ fontSize: 15 }}>
+                Personalized for your habits and goals
+              </p>
+            </div>
+
+            <div className="card mb-12" style={{ textAlign: 'center', padding: 20 }}>
+              <p className="text-muted" style={{ fontSize: 13, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 500 }}>
+                Quit by
+              </p>
+              <p style={{ fontSize: 48, fontWeight: 700, color: 'var(--primary)' }}>
+                {animDays} <span style={{ fontSize: 22, fontWeight: 600 }}>days</span>
+              </p>
+              <p className="text-muted" style={{ fontSize: 13, marginTop: 4 }}>
+                {quitDateStr}
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 32 }}>
+              <div className="card" style={{ textAlign: 'center', padding: 16 }}>
+                <p className="text-muted" style={{ fontSize: 11, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 500 }}>
+                  You'll save
+                </p>
+                <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--gold)' }}>
+                  ${animSavings}
+                </p>
+                <p className="text-muted" style={{ fontSize: 13, marginTop: 2 }}>in 12 weeks</p>
+              </div>
+              <div className="card" style={{ textAlign: 'center', padding: 16 }}>
+                <p className="text-muted" style={{ fontSize: 11, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 500 }}>
+                  Lung health
+                </p>
+                <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--mint)' }}>
+                  +{animHealth}%
+                </p>
+                <p className="text-muted" style={{ fontSize: 13, marginTop: 2 }}>in 2 weeks</p>
+              </div>
+            </div>
+
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>See How It Works</button>
+          </div>
+        );
+      }
+
+      // ── Screen 6: How It Works ──
+      function HowItWorksScreen() {
+        const steps = [
+          {
+            num: 1,
+            title: 'Track your puffs',
+            desc: 'Log each session. Our AI learns your patterns and triggers to give you personalized advice.'
+          },
+          {
+            num: 2,
+            title: 'Reduce gradually',
+            desc: 'Your daily limit drops at your pace. No cold turkey — we meet you where you are.'
+          },
+          {
+            num: 3,
+            title: 'Quit for good',
+            desc: 'AI-powered coaching, craving tools, and milestone rewards keep you on track to zero.'
+          }
+        ];
+        return (
+          <div className="screen" key={6}>
+            <div className="spacer" style={{ flex: 0.3 }} />
+            <div className="text-center mb-32">
+              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>How PuffDown Works</h2>
+              <p className="text-muted" style={{ fontSize: 15 }}>3 simple steps to quit vaping</p>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 28, marginBottom: 32 }}>
+              {steps.map(s => (
+                <div className="step-item" key={s.num}>
+                  <div className="step-circle">{s.num}</div>
+                  <div>
+                    <p style={{ fontSize: 17, fontWeight: 500, marginBottom: 4 }}>{s.title}</p>
+                    <p className="text-muted" style={{ fontSize: 13, lineHeight: 1.3 }}>{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Try It Now</button>
+          </div>
+        );
+      }
+
+      // ── Screen 7: Wow Moment ──
+      function WowMomentScreen() {
+        const todayStr = new Date().toLocaleDateString('en-US', {
+          weekday: 'long', month: 'long', day: 'numeric'
+        });
+        const dailyTarget = Math.max(data.dailyPuffs - 10, 1);
+        const circumference = 2 * Math.PI * 88;
+
+        return (
+          <div className="screen" key={7}>
+            <div className="text-center mb-8">
+              <p className="text-muted" style={{ fontSize: 13 }}>{todayStr}</p>
+              <h2 style={{ fontSize: 28, fontWeight: 700, marginTop: 4, lineHeight: 1.1 }}>Day 1</h2>
+            </div>
+
+            <div className="spacer" style={{ flex: 0.2 }} />
+
+            <div className="progress-ring-container mb-24">
+              <svg viewBox="0 0 200 200">
+                <circle className="progress-ring-bg" cx="100" cy="100" r="88" />
+                <circle
+                  className="progress-ring-fill"
+                  cx="100" cy="100" r="88"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference}
+                />
+              </svg>
+              <div className="progress-ring-text">
+                <span style={{ fontSize: 48, fontWeight: 700 }}>0</span>
+                <span className="text-muted" style={{ fontSize: 15 }}>/ {dailyTarget} puffs</span>
+              </div>
+            </div>
+
+            <div className="stat-row mb-32">
+              <div className="stat-box">
+                <div className="stat-value" style={{ color: 'var(--primary)' }}>0</div>
+                <div className="stat-label">Day Streak</div>
+              </div>
+              <div className="stat-box">
+                <div className="stat-value" style={{ color: 'var(--gold)' }}>$0</div>
+                <div className="stat-label">Saved</div>
+              </div>
+              <div className="stat-box">
+                <div className="stat-value" style={{ color: 'var(--mint)' }}>🫁</div>
+                <div className="stat-label">Recovering</div>
+              </div>
+            </div>
+
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Start My Journey</button>
+          </div>
+        );
+      }
+
+      // ── Screen 8: Paywall Step 1 ──
+      function PaywallStep1Screen() {
+        const features = [
+          { title: 'Unlimited AI coaching', desc: 'Personalized advice for cravings, triggers & more' },
+          { title: 'Smart puff tracking', desc: 'Auto-adjusting daily limits that adapt to you' },
+          { title: 'Progress insights', desc: 'Health recovery timeline, savings tracker & streaks' }
+        ];
+        return (
+          <div className="screen" key={8}>
+            <div className="spacer" style={{ flex: 0.3 }} />
+            <div className="text-center mb-32">
+              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>
+                Your plan is ready.<br />Unlock it all.
+              </h2>
+            </div>
+            <div className="card mb-32" style={{ padding: '4px 16px' }}>
+              {features.map((f, i) => (
+                <div className="feature-row" key={i}>
+                  <div className="feature-check">✓</div>
+                  <div>
+                    <p style={{ fontSize: 15, fontWeight: 500, marginBottom: 2 }}>{f.title}</p>
+                    <p className="text-muted" style={{ fontSize: 13 }}>{f.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Continue</button>
+          </div>
+        );
+      }
+
+      // ── Screen 9: Paywall Step 2 (Trust) ──
+      function PaywallStep2Screen() {
+        return (
+          <div className="screen" key={9}>
+            <div className="spacer" />
+            <div className="text-center">
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%',
+                background: 'var(--primary-dim)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 24px', fontSize: 36
+              }}>🔔</div>
+              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 12, lineHeight: 1.3 }}>
+                We'll remind you before your trial ends
+              </h2>
+              <p className="text-muted mb-32" style={{ fontSize: 15, lineHeight: 1.3 }}>
+                You won't be charged today. Start your 7-day free trial and cancel anytime — we'll send a reminder 24 hours before it renews.
+              </p>
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Continue</button>
+          </div>
+        );
+      }
+
+      // ── Screen 10: Paywall Step 3 (Pricing) ──
+      function PaywallStep3Screen() {
+        const [selectedPlan, setSelectedPlan] = useState('monthly');
+
+        const finishOnboarding = () => {
+          setData(prev => ({ ...prev, onboardingComplete: true, startDate: todayKey(), puffLogs: {} }));
+          setScreen(11);
+        };
+
+        return (
+          <div className="screen" key={10}>
+            <div className="spacer" style={{ flex: 0.2 }} />
+            <div className="text-center mb-24">
+              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, lineHeight: 1.1 }}>Choose your plan</h2>
+              <p className="text-muted" style={{ fontSize: 15 }}>Start with a 7-day free trial</p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+              <div
+                className={`pricing-card ${selectedPlan === 'weekly' ? 'selected' : ''}`}
+                onClick={() => setSelectedPlan('weekly')}
+              >
+                <p className="plan-name">Weekly</p>
+                <p className="plan-price">$4.99<span className="plan-period"> / week</span></p>
+              </div>
+
+              <div
+                className={`pricing-card ${selectedPlan === 'monthly' ? 'selected' : ''}`}
+                onClick={() => setSelectedPlan('monthly')}
+                style={{ marginTop: 4 }}
+              >
+                <div className="badge">Most Popular</div>
+                <p className="plan-name">Monthly</p>
+                <p className="plan-price">$9.99<span className="plan-period"> / month</span></p>
+              </div>
+
+              <div
+                className={`pricing-card ${selectedPlan === 'yearly' ? 'selected' : ''}`}
+                onClick={() => setSelectedPlan('yearly')}
+              >
+                <div className="badge badge-gold">Best Value</div>
+                <p className="plan-name">Yearly</p>
+                <p className="plan-price">$29.99<span className="plan-period"> / year</span></p>
+              </div>
+            </div>
+
+            <button className="btn btn-primary mb-16" onClick={finishOnboarding}>
+              Start Free Trial
+            </button>
+
+            <div className="text-center mb-12">
+              <button className="link-muted" onClick={finishOnboarding}>Maybe later</button>
+            </div>
+            <div className="text-center">
+              <button className="link-muted" style={{ fontSize: 12 }}>Restore Purchases</button>
+            </div>
+            <div className="spacer" />
+          </div>
+        );
+      }
+
+      // ── Helper: today's date key ──
+      function todayKey() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+
+      // ── Helper: days since a date string ──
+      function daysSince(dateStr) {
+        if (!dateStr) return 0;
+        const start = new Date(dateStr + 'T00:00:00');
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        return Math.max(0, Math.floor((now - start) / 86400000));
+      }
+
+      // ── Helper: count streak of days where user stayed under target ──
+      function calcStreak(puffLogs, dailyPuffs, startDate) {
+        if (!startDate) return 0;
+        let streak = 0;
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        // Walk backwards from yesterday (today is still in progress)
+        const check = new Date(now);
+        check.setDate(check.getDate() - 1);
+        const start = new Date(startDate + 'T00:00:00');
+        while (check >= start) {
+          const key = check.getFullYear() + '-' + String(check.getMonth() + 1).padStart(2, '0') + '-' + String(check.getDate()).padStart(2, '0');
+          const elapsed = Math.floor((check - start) / 86400000);
+          const target = Math.max(dailyPuffs - (10 * (elapsed + 1) / 45), 0);
+          const logged = (puffLogs && puffLogs[key]) || 0;
+          if (logged <= Math.ceil(target)) {
+            streak++;
+          } else {
+            break;
+          }
+          check.setDate(check.getDate() - 1);
+        }
+        return streak;
+      }
+
+      // ── Main App (post-onboarding) ──
+      function MainApp() {
+        const startDate = data.startDate || todayKey();
+        const puffLogs = data.puffLogs || {};
+        const today = todayKey();
+        const puffsToday = puffLogs[today] || 0;
+        const elapsed = daysSince(startDate);
+        const dailyTarget = Math.max(Math.round(data.dailyPuffs - (10 * (elapsed + 1) / 45)), 1);
+        const circumference = 2 * Math.PI * 88;
+        const progress = Math.min(puffsToday / dailyTarget, 1);
+        const offset = circumference * (1 - progress);
+        const overLimit = puffsToday > dailyTarget;
+
+        const todayStr = new Date().toLocaleDateString('en-US', {
+          weekday: 'long', month: 'long', day: 'numeric'
+        });
+
+        // Set startDate on first visit
+        useEffect(() => {
+          if (!data.startDate) {
+            update('startDate', todayKey());
+          }
+        }, []);
+
+        const streak = calcStreak(puffLogs, data.dailyPuffs, startDate);
+
+        // Savings: puffs avoided * cost per puff
+        const weeklyMid = SPEND_MAP[data.weeklySpend] || 22.5;
+        const costPerPuff = weeklyMid / 7 / data.dailyPuffs;
+        let totalPuffsAvoided = 0;
+        for (let i = 0; i <= elapsed; i++) {
+          const d = new Date(startDate + 'T00:00:00');
+          d.setDate(d.getDate() + i);
+          const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          const logged = puffLogs[key] || 0;
+          const avoided = Math.max(data.dailyPuffs - logged, 0);
+          totalPuffsAvoided += avoided;
+        }
+        const saved = Math.round(totalPuffsAvoided * costPerPuff * 100) / 100;
+
+        const logPuff = () => {
+          setData(prev => {
+            const logs = { ...prev.puffLogs } || {};
+            logs[today] = (logs[today] || 0) + 1;
+            return { ...prev, puffLogs: logs, startDate: prev.startDate || today };
+          });
+        };
+
+        const resetOnboarding = () => {
+          const fresh = {
+            vapeType: null, dailyPuffs: 150,
+            weeklySpend: null, biggestStruggle: null,
+            onboardingComplete: false
+          };
+          saveData(fresh);
+          setData(fresh);
+          setScreen(0);
+        };
+
+        return (
+          <div className="screen" key={11} style={{ padding: 'calc(var(--safe-top) + 24px) 20px calc(var(--safe-bottom) + 24px)' }}>
+            <div className="text-center mb-8">
+              <p className="text-muted" style={{ fontSize: 13 }}>{todayStr}</p>
+              <h2 style={{ fontSize: 28, fontWeight: 700, marginTop: 4, lineHeight: 1.1 }}>Day {elapsed + 1}</h2>
+            </div>
+
+            <div className="spacer" style={{ flex: 0.15 }} />
+
+            <div className="progress-ring-container mb-24">
+              <svg viewBox="0 0 200 200">
+                <circle className="progress-ring-bg" cx="100" cy="100" r="88" />
+                <circle
+                  className="progress-ring-fill"
+                  cx="100" cy="100" r="88"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  style={overLimit ? { stroke: 'var(--coral)' } : {}}
+                />
+              </svg>
+              <div className="progress-ring-text">
+                <span style={{ fontSize: 48, fontWeight: 700, color: overLimit ? 'var(--coral)' : 'var(--text)' }}>{puffsToday}</span>
+                <span className="text-muted" style={{ fontSize: 15 }}>/ {dailyTarget} puffs</span>
+              </div>
+            </div>
+
+            <div className="stat-row mb-32">
+              <div className="stat-box">
+                <div className="stat-value" style={{ color: 'var(--primary)' }}>{streak}</div>
+                <div className="stat-label">Day Streak</div>
+              </div>
+              <div className="stat-box">
+                <div className="stat-value" style={{ color: 'var(--gold)' }}>${saved.toFixed(0)}</div>
+                <div className="stat-label">Saved</div>
+              </div>
+              <div className="stat-box">
+                <div className="stat-value" style={{ color: 'var(--mint)' }}>Day {elapsed + 1}</div>
+                <div className="stat-label">Journey</div>
+              </div>
+            </div>
+
+            <button className="btn btn-primary mb-16" onClick={logPuff}>
+              + Log a Puff
+            </button>
+
+            <div className="text-center">
+              <button className="link-muted" onClick={resetOnboarding} style={{ fontSize: 12 }}>
+                Reset Onboarding (dev)
+              </button>
+            </div>
+            <div className="spacer" />
+          </div>
+        );
+      }
+
+      // ── Screen router ──
+      const screens = [
+        WelcomeScreen,
+        VapeTypeScreen,
+        DailyPuffsScreen,
+        WeeklySpendScreen,
+        BiggestStruggleScreen,
+        PersonalPlanScreen,
+        HowItWorksScreen,
+        WowMomentScreen,
+        PaywallStep1Screen,
+        PaywallStep2Screen,
+        PaywallStep3Screen,
+        MainApp
+      ];
+
+      const CurrentScreen = screens[screen] || MainApp;
+      return <CurrentScreen />;
+    }
+
+    // ── Mount ──
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+    // ── Register service worker ──
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
