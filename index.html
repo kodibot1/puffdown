@@ -434,6 +434,67 @@
     }
     .tab-item.active .tab-label { color: var(--primary); }
 
+    /* Floating puff button (FAB) */
+    .puff-fab {
+      position: fixed;
+      bottom: calc(70px + var(--safe-bottom) + 16px);
+      right: 20px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(45, 212, 191, 0.4);
+      z-index: 99;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s, box-shadow 0.3s;
+    }
+    .puff-fab:active {
+      transform: scale(0.9);
+    }
+    .puff-fab.bumped {
+      animation: fabBump 0.3s ease;
+    }
+    @keyframes fabBump {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .puff-fab svg {
+      width: 30px;
+      height: 30px;
+    }
+    .puff-fab.over-target {
+      background: var(--coral);
+      box-shadow: 0 4px 20px rgba(248, 113, 113, 0.4);
+    }
+    .puff-fab-toast {
+      position: fixed;
+      bottom: calc(70px + var(--safe-bottom) + 90px);
+      right: 20px;
+      background: var(--card);
+      border: 1px solid rgba(45, 212, 191, 0.3);
+      border-radius: 12px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      z-index: 99;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .puff-fab-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     /* Main app screen with tab bar */
     .screen-with-tabs {
       position: fixed; inset: 0;
@@ -2174,6 +2235,9 @@
         }
         const saved = Math.round(totalPuffsAvoided * costPerPuff * 100) / 100;
 
+        const [fabToast, setFabToast] = useState(false);
+        const fabToastTimer = React.useRef(null);
+
         const logPuff = useCallback(() => {
           setData(prev => {
             const logs = { ...prev.puffLogs } || {};
@@ -2181,6 +2245,23 @@
             return { ...prev, puffLogs: logs, startDate: prev.startDate || today };
           });
         }, [today]);
+
+        const logPuffWithFeedback = useCallback(() => {
+          logPuff();
+          // Haptic
+          if (navigator.vibrate) navigator.vibrate(25);
+          // FAB bump animation
+          const fab = document.querySelector('.puff-fab');
+          if (fab) {
+            fab.classList.remove('bumped');
+            void fab.offsetWidth;
+            fab.classList.add('bumped');
+          }
+          // Toast
+          setFabToast(true);
+          clearTimeout(fabToastTimer.current);
+          fabToastTimer.current = setTimeout(() => setFabToast(false), 1200);
+        }, [logPuff]);
 
         // URL shortcuts: ?action=log or ?reset=true
         useEffect(() => {
@@ -2319,7 +2400,7 @@
                 </div>
               </div>
 
-              <button className="btn btn-primary mb-16" onClick={logPuff}>
+              <button className="btn btn-primary mb-16" onClick={logPuffWithFeedback}>
                 + Log a Puff
               </button>
 
@@ -2401,6 +2482,21 @@
               {activeTab === 'timeline' && <TimelineTab />}
               {activeTab === 'learn' && <LearnTab />}
             </div>
+
+            {/* Floating puff button */}
+            <div className={`puff-fab-toast ${fabToast ? 'show' : ''}`}>
+              Puff logged
+            </div>
+            <button className={`puff-fab ${overLimit ? 'over-target' : ''}`} onClick={logPuffWithFeedback} aria-label="Log a puff">
+              <svg viewBox="0 0 28 80" fill="none">
+                <rect x="6" y="12" width="16" height="52" rx="4" fill="#0D1117"/>
+                <rect x="6" y="32" width="16" height="2" rx="1" fill="#0D1117" opacity="0.5"/>
+                <rect x="9" y="0" width="10" height="12" rx="3" fill="#0D1117" opacity="0.7"/>
+                <rect x="8" y="62" width="12" height="10" rx="3" fill="#0D1117" opacity="0.7"/>
+                <circle cx="14" cy="67" r="2" fill="#0D1117" opacity="0.5"/>
+              </svg>
+            </button>
+
             <div className="tab-bar">
               <button className={`tab-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
                 <span className="tab-icon">📊</span>
