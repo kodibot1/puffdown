@@ -1672,22 +1672,22 @@
                 <div className="step-item">
                   <div className="step-circle">1</div>
                   <div>
-                    <p style={{ fontSize: 15, fontWeight: 500 }}>Track your puffs</p>
-                    <p className="text-muted" style={{ fontSize: 13 }}>Build awareness of your patterns</p>
+                    <p style={{ fontSize: 15, fontWeight: 500 }}>Track every puff</p>
+                    <p className="text-muted" style={{ fontSize: 13 }}>One tap per puff. See your real usage — most people are shocked by the number.</p>
                   </div>
                 </div>
                 <div className="step-item">
                   <div className="step-circle">2</div>
                   <div>
-                    <p style={{ fontSize: 15, fontWeight: 500 }}>Reduce gradually</p>
-                    <p className="text-muted" style={{ fontSize: 13 }}>Daily limits that adapt to you</p>
+                    <p style={{ fontSize: 15, fontWeight: 500 }}>Follow your daily target</p>
+                    <p className="text-muted" style={{ fontSize: 13 }}>Your limit drops a little each day over 45 days. Small enough you won't feel it.</p>
                   </div>
                 </div>
                 <div className="step-item">
                   <div className="step-circle">3</div>
                   <div>
-                    <p style={{ fontSize: 15, fontWeight: 500 }}>Hit your goals</p>
-                    <p className="text-muted" style={{ fontSize: 13 }}>{topGoals.join(', ') || 'Quit for good'}</p>
+                    <p style={{ fontSize: 15, fontWeight: 500 }}>Watch the results</p>
+                    <p className="text-muted" style={{ fontSize: 13 }}>Money saved, health recovering, puffs dropping. The proof keeps you going.</p>
                   </div>
                 </div>
               </div>
@@ -1778,9 +1778,15 @@
 
             {tapped && (
               <div style={{ animation: 'fadeInUp 0.4s ease-out' }}>
-                <div className="card mb-16" style={{ padding: 16, borderColor: 'rgba(45,212,191,0.3)', textAlign: 'center' }}>
-                  <p style={{ fontSize: 15, lineHeight: 1.5 }}>
-                    This is how easy it is. Every puff you track brings you closer to quitting.
+                <div className="card mb-12" style={{ padding: 16, borderColor: 'rgba(45,212,191,0.3)' }}>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--primary)', marginBottom: 8 }}>
+                    Why this works
+                  </p>
+                  <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--subtext)', marginBottom: 10 }}>
+                    Most vapers hit their device <span style={{ color: '#fff', fontWeight: 600 }}>200+ times a day</span> without realizing it. Tracking makes the invisible visible.
+                  </p>
+                  <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--subtext)' }}>
+                    Every time you log a puff, you create a <span style={{ color: '#fff', fontWeight: 600 }}>pause moment</span> — a split second of awareness that naturally starts reducing your usage.
                   </p>
                 </div>
                 <button className="btn btn-primary" onClick={next}>I'm Ready</button>
@@ -2044,33 +2050,39 @@
         };
 
         const steps = [
-          { num: '1', icon: '📊', title: 'Log your puffs', desc: 'One tap. Takes 2 seconds.' },
-          { num: '2', icon: '📈', title: 'Watch your progress', desc: 'Savings, streaks, health recovery.' },
-          { num: '3', icon: '📚', title: 'Learn something new', desc: 'Daily facts about why quitting matters.' }
+          { icon: '📊', title: 'Log your puffs', desc: 'Tap once every time you vape. That awareness alone cuts usage by 20-30%.' },
+          { icon: '📈', title: 'Stay under your target', desc: 'Your daily limit drops gradually. You\'ll barely notice — until you look back and see how far you\'ve come.' },
+          { icon: '📚', title: 'Learn why it matters', desc: 'Quick facts about what vaping does to your body — and how fast it heals when you stop.' }
         ];
 
         return (
           <div className="screen screen-gradient" key="s25">
-            <div className="spacer" style={{ flex: 0.3 }} />
-            <div className="text-center mb-32">
+            <div className="spacer" style={{ flex: 0.2 }} />
+            <div className="text-center mb-24">
               <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, lineHeight: 1.2 }}>
                 Your Daily PuffDown Routine
               </h2>
               <p className="text-muted" style={{ fontSize: 15 }}>Simple. Takes 30 seconds a day.</p>
             </div>
 
-            <div className="card mb-24" style={{ padding: 20 }}>
+            <div className="card mb-16" style={{ padding: 20 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {steps.map((s, i) => (
                   <div key={i} className="step-item" style={{ opacity: 1, animation: `fadeInUp 0.4s ease-out ${i * 0.2}s both` }}>
                     <div className="step-circle">{s.icon}</div>
                     <div>
                       <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>{s.title}</p>
-                      <p className="text-muted" style={{ fontSize: 14 }}>{s.desc}</p>
+                      <p className="text-muted" style={{ fontSize: 14, lineHeight: 1.5 }}>{s.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="card mb-24" style={{ padding: 16, borderColor: 'rgba(45,212,191,0.2)', textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: 'var(--subtext)', lineHeight: 1.5 }}>
+                The secret? <span style={{ color: 'var(--primary)', fontWeight: 600 }}>You can't change what you don't measure.</span> Most vapers have no idea how much they actually use. PuffDown makes it impossible to ignore — and that's what makes it work.
+              </p>
             </div>
 
             <div className="spacer" />
