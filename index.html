@@ -660,6 +660,133 @@
     .mock-notif-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
     .mock-notif-body { font-size: 13px; color: var(--subtext); }
     .mock-notif-time { font-size: 11px; color: var(--dark-grey); margin-left: auto; flex-shrink: 0; }
+
+    /* ── Trigger bottom sheet ── */
+    .trigger-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: flex-end; justify-content: center;
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .trigger-sheet {
+      background: var(--card); border-radius: 20px 20px 0 0;
+      padding: 20px 20px calc(var(--safe-bottom) + 16px);
+      width: 100%; max-width: 500px;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .trigger-tags {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      margin: 16px 0;
+    }
+    .trigger-tag {
+      padding: 10px 16px; border-radius: 12px;
+      background: var(--bg); border: 1.5px solid var(--card-border);
+      font-size: 14px; font-weight: 500; color: var(--text);
+      cursor: pointer; transition: all 0.15s;
+      font-family: inherit;
+    }
+    .trigger-tag:active { transform: scale(0.95); background: var(--primary-dim); border-color: var(--primary); }
+
+    /* ── 7-Day bar chart ── */
+    .chart-container {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 16px;
+    }
+    .chart-bars {
+      display: flex; align-items: flex-end; gap: 6px;
+      height: 100px; margin-top: 12px;
+    }
+    .chart-bar-wrapper {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 4px; height: 100%;
+      justify-content: flex-end;
+    }
+    .chart-bar {
+      width: 100%; border-radius: 6px 6px 2px 2px;
+      min-height: 4px; transition: height 0.4s ease;
+      background: var(--primary);
+    }
+    .chart-bar.over { background: var(--coral); }
+    .chart-bar-target {
+      width: 100%; height: 2px; border-radius: 1px;
+      background: var(--dark-grey); opacity: 0.5;
+    }
+
+    /* ── Quit plan schedule ── */
+    .quit-plan {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 16px;
+    }
+    .quit-plan-weeks {
+      display: flex; gap: 4px; align-items: flex-end;
+      height: 80px; margin: 12px 0 8px;
+    }
+    .quit-plan-week {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 4px; height: 100%;
+      justify-content: flex-end;
+    }
+    .quit-plan-bar {
+      width: 100%; border-radius: 4px 4px 2px 2px;
+      min-height: 4px; background: var(--card-border);
+      transition: height 0.4s ease; position: relative;
+    }
+    .quit-plan-bar.current { background: var(--primary); }
+    .quit-plan-bar.past { background: var(--primary); opacity: 0.5; }
+
+    /* ── Breathing exercise ── */
+    .breathing-overlay {
+      position: fixed; inset: 0; z-index: 1001;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 20px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .breathing-circle {
+      width: 160px; height: 160px; border-radius: 50%;
+      background: var(--primary-dim);
+      border: 3px solid var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 4s ease-in-out;
+    }
+    .breathing-circle.inhale {
+      transform: scale(1.4);
+      background: rgba(45,212,191,0.25);
+      box-shadow: 0 0 60px rgba(45,212,191,0.3);
+    }
+    .breathing-circle.exhale {
+      transform: scale(0.8);
+      background: var(--primary-dim);
+      box-shadow: none;
+    }
+    .breathing-circle.hold {
+      box-shadow: 0 0 30px rgba(45,212,191,0.2);
+    }
+
+    /* ── Achievement badges ── */
+    .badge-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .badge-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      padding: 12px 4px; border-radius: 12px;
+      background: var(--card); border: 1px solid var(--card-border);
+    }
+    .badge-item.locked { opacity: 0.35; }
+    .badge-emoji { font-size: 28px; }
+    .badge-title { font-size: 10px; color: var(--subtext); text-align: center; font-weight: 500; }
+
+    /* ── Coaching message card ── */
+    .coaching-card {
+      background: linear-gradient(135deg, rgba(45,212,191,0.12), rgba(134,239,172,0.08));
+      border: 1px solid rgba(45,212,191,0.25);
+      border-radius: 16px; padding: 16px;
+    }
   </style>
 </head>
 <body>
@@ -1031,6 +1158,17 @@
       'Stress relief from vaping is an illusion — nicotine actually increases anxiety long-term.'
     ];
 
+    // ── Trigger tags for puff logging ──
+    const TRIGGER_TAGS = [
+      { key: 'stress', label: 'Stress', emoji: '😤' },
+      { key: 'boredom', label: 'Boredom', emoji: '😑' },
+      { key: 'social', label: 'Social', emoji: '👥' },
+      { key: 'habit', label: 'Habit', emoji: '🔁' },
+      { key: 'meals', label: 'After meals', emoji: '🍽️' },
+      { key: 'craving', label: 'Craving', emoji: '🔥' },
+      { key: 'other', label: 'Other', emoji: '❓' }
+    ];
+
     // ── Notification messages ──
     const NOTIF_MESSAGES = [
       { title: 'How are you doing?', body: 'Tap to log a puff and stay on track.' },
@@ -1065,6 +1203,7 @@
         triggers: [],
         biggestStruggle: null,
         quitAttempts: null,
+        triggerLogs: {},
         onboardingComplete: false,
         isPremium: false,
         ...(saved || {})
@@ -2501,7 +2640,7 @@
         while (check >= start) {
           const key = check.getFullYear() + '-' + String(check.getMonth() + 1).padStart(2, '0') + '-' + String(check.getDate()).padStart(2, '0');
           const elapsed = Math.floor((check - start) / 86400000);
-          const target = Math.max(dailyPuffs - (10 * (elapsed + 1) / 45), 0);
+          const target = Math.max(dailyPuffs * (1 - (elapsed + 1) / 45), 0);
           const logged = (puffLogs && puffLogs[key]) || 0;
           if (logged <= Math.ceil(target)) {
             streak++;
@@ -2524,7 +2663,7 @@
         const today = todayKey();
         const puffsToday = puffLogs[today] || 0;
         const elapsed = daysSince(startDate);
-        const dailyTarget = Math.max(Math.round(data.dailyPuffs - (10 * (elapsed + 1) / 45)), 1);
+        const dailyTarget = Math.max(Math.round(data.dailyPuffs * (1 - (elapsed + 1) / 45)), 1);
         const circumference = 2 * Math.PI * 88;
         const progress = Math.min(puffsToday / dailyTarget, 1);
         const offset = circumference * (1 - progress);
@@ -2556,8 +2695,43 @@
         }
         const saved = Math.round(totalPuffsAvoided * costPerPuff * 100) / 100;
 
-        const [fabToast, setFabToast] = useState(false);
-        const fabToastTimer = React.useRef(null);
+        // Trigger modal state
+        const [showTriggerModal, setShowTriggerModal] = useState(false);
+        const triggerModalTimer = React.useRef(null);
+
+        // Breathing exercise state
+        const [showBreathing, setShowBreathing] = useState(false);
+        const [breathStart, setBreathStart] = useState(null);
+        const [breathElapsed, setBreathElapsed] = useState(0);
+
+        // Breathing timer
+        useEffect(() => {
+          if (!showBreathing || !breathStart) return;
+          const id = setInterval(() => {
+            const el = (Date.now() - breathStart) / 1000;
+            setBreathElapsed(el);
+            // 4 cycles of 16s each = 64s total
+            if (el >= 64) {
+              clearInterval(id);
+              if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            }
+          }, 100);
+          return () => clearInterval(id);
+        }, [showBreathing, breathStart]);
+
+        // Breathing phase from elapsed
+        const breathCycle = breathElapsed % 16;
+        const breathPhase = breathCycle < 4 ? 'inhale' : breathCycle < 8 ? 'hold' : breathCycle < 12 ? 'exhale' : 'hold';
+        const breathLabel = breathCycle < 4 ? 'Breathe in...' : breathCycle < 8 ? 'Hold...' : breathCycle < 12 ? 'Breathe out...' : 'Hold...';
+        const breathCycleNum = Math.floor(breathElapsed / 16) + 1;
+        const breathDone = breathElapsed >= 64;
+
+        const startBreathing = () => {
+          setShowBreathing(true);
+          setBreathStart(Date.now());
+          setBreathElapsed(0);
+          if (navigator.vibrate) navigator.vibrate(30);
+        };
 
         const logPuff = useCallback(() => {
           setData(prev => {
@@ -2565,6 +2739,19 @@
             logs[today] = (logs[today] || 0) + 1;
             return { ...prev, puffLogs: logs, startDate: prev.startDate || today };
           });
+        }, [today]);
+
+        const logTrigger = useCallback((triggerKey) => {
+          setData(prev => {
+            const tLogs = { ...(prev.triggerLogs || {}) };
+            const dayLogs = { ...(tLogs[today] || {}) };
+            dayLogs[triggerKey] = (dayLogs[triggerKey] || 0) + 1;
+            tLogs[today] = dayLogs;
+            return { ...prev, triggerLogs: tLogs };
+          });
+          setShowTriggerModal(false);
+          clearTimeout(triggerModalTimer.current);
+          if (navigator.vibrate) navigator.vibrate(15);
         }, [today]);
 
         const logPuffWithFeedback = useCallback(() => {
@@ -2578,10 +2765,10 @@
             void fab.offsetWidth;
             fab.classList.add('bumped');
           }
-          // Toast
-          setFabToast(true);
-          clearTimeout(fabToastTimer.current);
-          fabToastTimer.current = setTimeout(() => setFabToast(false), 1200);
+          // Show trigger modal
+          setShowTriggerModal(true);
+          clearTimeout(triggerModalTimer.current);
+          triggerModalTimer.current = setTimeout(() => setShowTriggerModal(false), 5000);
         }, [logPuff]);
 
         // URL shortcuts: ?action=log or ?reset=true
@@ -2660,6 +2847,7 @@
             vapeType: null, dailyPuffs: 150, vapingDuration: null,
             weeklySpend: 30, lifeImpact: 3, triggers: [],
             biggestStruggle: null, quitAttempts: null,
+            triggerLogs: {},
             onboardingComplete: false
           };
           saveData(fresh);
@@ -2678,8 +2866,99 @@
 
         // ── Dashboard Tab ──
         function DashboardTab() {
+          // ── 7-day chart data ──
+          const last7 = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            const dayElapsed = Math.max(0, Math.floor((d - new Date(startDate + 'T00:00:00')) / 86400000));
+            const target = Math.max(Math.round(data.dailyPuffs * (1 - (dayElapsed + 1) / 45)), 1);
+            last7.push({
+              label: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()],
+              puffs: puffLogs[key] || 0,
+              target,
+              isToday: i === 0
+            });
+          }
+          const maxChart = Math.max(...last7.map(d => Math.max(d.puffs, d.target)), 1);
+          const avg7 = Math.round(last7.reduce((s, d) => s + d.puffs, 0) / 7);
+
+          // Week-over-week change
+          const prev7 = [];
+          for (let i = 13; i >= 7; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            prev7.push(puffLogs[key] || 0);
+          }
+          const avgPrev = prev7.reduce((s, v) => s + v, 0) / 7;
+          const weekChange = avgPrev > 0 ? Math.round(((avg7 - avgPrev) / avgPrev) * 100) : 0;
+
+          // ── Quit plan schedule (7 weeks) ──
+          const currentWeek = Math.min(Math.floor(elapsed / 7), 6);
+          const quitWeeks = [];
+          for (let w = 0; w < 7; w++) {
+            const weekTarget = Math.max(Math.round(data.dailyPuffs * (1 - ((w * 7 + 3) + 1) / 45)), 0);
+            quitWeeks.push({ week: w + 1, target: weekTarget, isCurrent: w === currentWeek, isPast: w < currentWeek });
+          }
+          const maxWeekTarget = Math.max(...quitWeeks.map(w => w.target), 1);
+          const weekProgress = Math.min((elapsed % 7) / 7, 1);
+
+          // ── Trigger breakdown ──
+          const triggerLogs = data.triggerLogs || {};
+          const allTriggers = {};
+          Object.values(triggerLogs).forEach(dayLog => {
+            Object.entries(dayLog).forEach(([k, v]) => {
+              allTriggers[k] = (allTriggers[k] || 0) + v;
+            });
+          });
+          const totalTriggers = Object.values(allTriggers).reduce((s, v) => s + v, 0);
+          const topTriggers = Object.entries(allTriggers)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3);
+          const hasTriggerData = totalTriggers > 0;
+
+          // ── Coaching message ──
+          let coachMsg = '';
+          const achievedMilestones = HEALTH_TIMELINE.filter(m => minutesSinceStart >= m.minutes);
+          const latestMilestone = achievedMilestones.length > 0 ? achievedMilestones[achievedMilestones.length - 1] : null;
+
+          if (puffsToday === 0 && elapsed > 0) {
+            coachMsg = "Zero puffs today — your lungs are thanking you right now. Keep going!";
+          } else if (streak >= 7) {
+            coachMsg = `${streak}-day streak! You're rewiring your brain's reward system. This is real change.`;
+          } else if (latestMilestone && achievedMilestones.length <= 3) {
+            coachMsg = `${latestMilestone.emoji} ${latestMilestone.title} — your body is already healing!`;
+          } else if (saved >= 50) {
+            coachMsg = `You've saved $${saved.toFixed(0)} so far. That's real money back in your pocket.`;
+          } else if (hasTriggerData && topTriggers.length > 0) {
+            const topKey = topTriggers[0][0];
+            const tag = TRIGGER_TAGS.find(t => t.key === topKey);
+            coachMsg = `Your #1 trigger is ${tag ? tag.label.toLowerCase() : topKey}. Knowing this is half the battle.`;
+          } else if (overLimit) {
+            coachMsg = "Over target today — that's okay. Tomorrow is a fresh start. Progress isn't linear.";
+          } else if (elapsed === 0) {
+            coachMsg = "Day 1 starts now. Every puff you skip is a step toward freedom.";
+          } else {
+            coachMsg = `Day ${elapsed + 1} of your quit journey. You're doing better than you think.`;
+          }
+
+          // ── Achievement badges ──
+          const badges = [
+            { emoji: '🌅', title: 'Day 1', unlocked: elapsed >= 1 },
+            { emoji: '🔥', title: '3-Day Streak', unlocked: streak >= 3 },
+            { emoji: '⭐', title: '7-Day Streak', unlocked: streak >= 7 },
+            { emoji: '💰', title: '$50 Saved', unlocked: saved >= 50 },
+            { emoji: '🎯', title: 'Under Target', unlocked: elapsed > 0 && !overLimit },
+            { emoji: '📊', title: 'First Log', unlocked: Object.keys(puffLogs).length > 0 },
+            { emoji: '🫁', title: '2 Weeks', unlocked: elapsed >= 14 },
+            { emoji: '🏆', title: '30 Days', unlocked: elapsed >= 30 }
+          ];
+
           return (
             <div className="tab-content">
+              {/* Day header */}
               <div className="text-center mb-8">
                 <p className="text-muted" style={{ fontSize: 13 }}>{todayStr}</p>
                 <h2 style={{ fontSize: 28, fontWeight: 700, marginTop: 4, lineHeight: 1.1 }}>
@@ -2687,8 +2966,12 @@
                 </h2>
               </div>
 
-              <div style={{ height: 16 }} />
+              {/* Coaching message */}
+              <div className="coaching-card mb-16">
+                <p style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--text)' }}>{coachMsg}</p>
+              </div>
 
+              {/* Progress ring */}
               <div className="progress-ring-container mb-24">
                 <svg viewBox="0 0 200 200">
                   <circle className="progress-ring-bg" cx="100" cy="100" r="88" />
@@ -2706,6 +2989,7 @@
                 </div>
               </div>
 
+              {/* Stat row */}
               <div className="stat-row mb-24">
                 <div className="stat-box">
                   <div className="stat-value" style={{ color: 'var(--primary)' }}>{streak}</div>
@@ -2721,10 +3005,116 @@
                 </div>
               </div>
 
+              {/* Log a Puff button */}
               <button className="btn btn-primary mb-16" onClick={logPuffWithFeedback}>
                 + Log a Puff
               </button>
 
+              {/* Quit Plan Schedule */}
+              <div className="quit-plan mb-16">
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>Your Quit Plan</p>
+                <p style={{ fontSize: 12, color: 'var(--subtext)' }}>
+                  {elapsed < 45 ? `Week ${currentWeek + 1} of 7 — target drops to 0 by day 45` : 'Quit plan complete!'}
+                </p>
+                <div className="quit-plan-weeks">
+                  {quitWeeks.map((w, i) => (
+                    <div className="quit-plan-week" key={i}>
+                      <div
+                        className={`quit-plan-bar ${w.isCurrent ? 'current' : w.isPast ? 'past' : ''}`}
+                        style={{ height: `${Math.max((w.target / maxWeekTarget) * 100, 6)}%` }}
+                      />
+                      <span style={{ fontSize: 10, color: w.isCurrent ? 'var(--primary)' : 'var(--dark-grey)' }}>W{w.week}</span>
+                    </div>
+                  ))}
+                </div>
+                {quitWeeks[currentWeek] && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                    <span style={{ fontSize: 12, color: 'var(--subtext)' }}>
+                      This week's target: {quitWeeks[currentWeek].target}/day
+                    </span>
+                    <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600 }}>
+                      {Math.round(weekProgress * 100)}% through
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* 7-Day Chart */}
+              <div className="chart-container mb-16">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Last 7 Days</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 12, color: 'var(--subtext)' }}>Avg: {avg7}/day</span>
+                    {weekChange !== 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 600, color: weekChange < 0 ? 'var(--mint)' : 'var(--coral)' }}>
+                        {weekChange > 0 ? '+' : ''}{weekChange}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="chart-bars">
+                  {last7.map((d, i) => (
+                    <div className="chart-bar-wrapper" key={i}>
+                      <div
+                        className={`chart-bar ${d.puffs > d.target ? 'over' : ''}`}
+                        style={{ height: `${Math.max((d.puffs / maxChart) * 100, 4)}%` }}
+                      />
+                      <span style={{ fontSize: 10, color: d.isToday ? 'var(--primary)' : 'var(--dark-grey)' }}>{d.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Trigger Breakdown */}
+              {hasTriggerData && (
+                <div className="card mb-16">
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Top Triggers</p>
+                  {topTriggers.map(([key, count]) => {
+                    const tag = TRIGGER_TAGS.find(t => t.key === key);
+                    const pct = Math.round((count / totalTriggers) * 100);
+                    return (
+                      <div key={key} style={{ marginBottom: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 13, color: 'var(--text)' }}>{tag ? `${tag.emoji} ${tag.label}` : key}</span>
+                          <span style={{ fontSize: 12, color: 'var(--subtext)' }}>{pct}%</span>
+                        </div>
+                        <div style={{ height: 6, background: 'var(--card-border)', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: 'var(--primary)', borderRadius: 3 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Breathe Button */}
+              <div
+                className="card mb-16"
+                onClick={startBreathing}
+                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}
+              >
+                <span style={{ fontSize: 32 }}>🫁</span>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 600 }}>Breathing Exercise</p>
+                  <p style={{ fontSize: 12, color: 'var(--subtext)' }}>Craving? 1 minute of box breathing can help it pass</p>
+                </div>
+                <span style={{ color: 'var(--dark-grey)', marginLeft: 'auto' }}>&#8250;</span>
+              </div>
+
+              {/* Achievement Badges */}
+              <div style={{ marginBottom: 16 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 10 }}>Achievements</p>
+                <div className="badge-grid">
+                  {badges.map((b, i) => (
+                    <div className={`badge-item ${b.unlocked ? '' : 'locked'}`} key={i}>
+                      <span className="badge-emoji">{b.emoji}</span>
+                      <span className="badge-title">{b.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Daily Fact */}
               <div className="daily-fact mb-16">
                 <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
                   Daily Fact
@@ -2732,6 +3122,7 @@
                 <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.5 }}>{dailyFact}</p>
               </div>
 
+              {/* Reset */}
               <div className="text-center">
                 <button className="link-muted" onClick={resetOnboarding} style={{ fontSize: 12 }}>
                   Reset Onboarding (dev)
@@ -2990,9 +3381,6 @@
             </div>
 
             {/* Floating puff button */}
-            <div className={`puff-fab-toast ${fabToast ? 'show' : ''}`}>
-              Puff logged
-            </div>
             <button className={`puff-fab ${overLimit ? 'over-target' : ''}`} onClick={logPuffWithFeedback} aria-label="Log a puff">
               <svg viewBox="0 0 28 80" fill="none">
                 <rect x="6" y="12" width="16" height="52" rx="4" fill="#0D1117"/>
@@ -3017,6 +3405,67 @@
                 <span className="tab-label">Learn</span>
               </button>
             </div>
+
+            {/* Trigger bottom sheet */}
+            {showTriggerModal && (
+              <div className="trigger-overlay" onClick={() => { setShowTriggerModal(false); clearTimeout(triggerModalTimer.current); }}>
+                <div className="trigger-sheet" onClick={e => e.stopPropagation()}>
+                  <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>What triggered that puff?</p>
+                  <p style={{ fontSize: 13, color: 'var(--subtext)' }}>Tracking triggers helps you quit faster</p>
+                  <div className="trigger-tags">
+                    {TRIGGER_TAGS.map(t => (
+                      <button className="trigger-tag" key={t.key} onClick={() => logTrigger(t.key)}>
+                        {t.emoji} {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => { setShowTriggerModal(false); clearTimeout(triggerModalTimer.current); }}
+                    style={{ width: '100%', padding: '12px', border: 'none', borderRadius: 12, background: 'var(--bg)', color: 'var(--dark-grey)', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer' }}
+                  >
+                    Skip
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Breathing exercise overlay */}
+            {showBreathing && (
+              <div className="breathing-overlay">
+                {!breathDone ? (
+                  <React.Fragment>
+                    <p style={{ fontSize: 13, color: 'var(--subtext)', marginBottom: 8 }}>Cycle {Math.min(breathCycleNum, 4)} of 4</p>
+                    <div className={`breathing-circle ${breathPhase}`}>
+                      <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--primary)' }}>{breathLabel}</span>
+                    </div>
+                    <p style={{ fontSize: 14, color: 'var(--subtext)', marginTop: 32, textAlign: 'center', lineHeight: 1.5 }}>
+                      Breathe with the circle.<br />Cravings typically pass in 3-5 minutes.
+                    </p>
+                    <button
+                      onClick={() => { setShowBreathing(false); setBreathStart(null); }}
+                      style={{ marginTop: 24, padding: '12px 32px', border: 'none', borderRadius: 12, background: 'var(--card)', color: 'var(--subtext)', fontSize: 14, fontFamily: 'inherit', cursor: 'pointer' }}
+                    >
+                      Close
+                    </button>
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    <div style={{ fontSize: 64, marginBottom: 16 }}>🌬️</div>
+                    <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Craving passed</h2>
+                    <p style={{ fontSize: 14, color: 'var(--subtext)', textAlign: 'center', lineHeight: 1.5, marginBottom: 32 }}>
+                      You just proved you're stronger than the craving. Every time you resist, it gets easier.
+                    </p>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => { setShowBreathing(false); setBreathStart(null); }}
+                      style={{ width: 'auto', padding: '14px 48px' }}
+                    >
+                      Done
+                    </button>
+                  </React.Fragment>
+                )}
+              </div>
+            )}
           </React.Fragment>
         );
       }
@@ -3074,7 +3523,8 @@
           vapeType: null, dailyPuffs: 150, vapingDuration: null,
           weeklySpend: 30, spendPeriod: 'every2weeks', spendRaw: 40,
           lifeImpact: 3, triggers: [], biggestStruggle: null,
-          quitAttempts: null, onboardingComplete: false, isPremium: false
+          quitAttempts: null, triggerLogs: {},
+          onboardingComplete: false, isPremium: false
         };
         saveData(fresh);
         setData(fresh);

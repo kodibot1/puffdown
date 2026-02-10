@@ -1,4 +1,4 @@
-const CACHE_NAME = 'puffdown-v10';
+const CACHE_NAME = 'puffdown-v11';
 const ASSETS = [
   './',
   './index.html',
