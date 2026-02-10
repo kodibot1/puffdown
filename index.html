@@ -2170,11 +2170,15 @@
           });
         }, [today]);
 
-        // Auto-log from shortcut (?action=log)
+        // URL shortcuts: ?action=log or ?reset=true
         useEffect(() => {
           const params = new URLSearchParams(window.location.search);
           if (params.get('action') === 'log') {
             logPuff();
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          if (params.get('reset') === 'true') {
+            window.devReset();
             window.history.replaceState({}, '', window.location.pathname);
           }
         }, [logPuff]);
