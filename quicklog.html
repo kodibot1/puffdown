@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0D1117">
+  <title>Puff</title>
+  <link rel="apple-touch-icon" href="vape-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="vape-icon.png">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'SF Pro Rounded', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0D1117;
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Full-screen tap zone */
+    .tap-zone {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    /* Puff flash overlay */
+    .flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(45, 212, 191, 0.08);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .flash.go {
+      animation: flashPulse 0.4s ease-out;
+    }
+    @keyframes flashPulse {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Checkmark that appears on auto-log */
+    .check {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(45, 212, 191, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .check.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .check svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    /* Count display */
+    .count {
+      font-size: 72px;
+      font-weight: 700;
+      line-height: 1;
+      color: #fff;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .count.bump {
+      transform: scale(1.2);
+    }
+
+    .label {
+      font-size: 14px;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .target-info {
+      font-size: 15px;
+      color: #9CA3AF;
+      margin-top: 4px;
+    }
+    .target-info span {
+      color: #2DD4BF;
+      font-weight: 600;
+    }
+
+    /* Vape icon */
+    .vape-icon {
+      opacity: 0.25;
+      margin-top: 12px;
+      transition: opacity 0.3s;
+    }
+    .vape-icon.glow {
+      opacity: 0.6;
+      filter: drop-shadow(0 0 12px rgba(45, 212, 191, 0.4));
+    }
+
+    .hint {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+      font-size: 12px;
+      color: #9CA3AF;
+      opacity: 0.4;
+      letter-spacing: 0.5px;
+      z-index: 2;
+    }
+
+    /* Over target state */
+    .over .count { color: #F87171; }
+    .over .check { background: rgba(248, 113, 113, 0.12); }
+    .over .flash { background: rgba(248, 113, 113, 0.08); }
+    .over .target-info span { color: #F87171; }
+    .over .vape-icon { filter: none; }
+    .over .vape-icon.glow { filter: drop-shadow(0 0 12px rgba(248, 113, 113, 0.4)); }
+    .over .vape-icon .v-accent { fill: #F87171; }
+
+    /* Cloud particles */
+    .clouds {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -80px);
+      pointer-events: none;
+      z-index: 3;
+    }
+    .cloud {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: rgba(45, 212, 191, 0.3);
+      border-radius: 50%;
+      opacity: 0;
+    }
+    .over .cloud { background: rgba(248, 113, 113, 0.3); }
+    .cloud.puff {
+      animation: rise 0.8s ease-out forwards;
+    }
+    @keyframes rise {
+      0% { opacity: 0.7; transform: translate(0, 0) scale(0.4); }
+      100% { opacity: 0; transform: translate(var(--dx), -60px) scale(2); }
+    }
+
+    /* Open app link */
+    .open-app {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 16px);
+      right: 16px;
+      font-size: 13px;
+      color: #9CA3AF;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      z-index: 10;
+    }
+    .open-app:active { color: #2DD4BF; }
+
+    /* Undo button */
+    .undo {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 56px);
+      font-size: 13px;
+      color: #9CA3AF;
+      background: rgba(255,255,255,0.06);
+      border: none;
+      padding: 8px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 10;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .undo.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .undo:active { color: #F87171; }
+  </style>
+</head>
+<body>
+  <a href="./index.html" class="open-app">Open App</a>
+
+  <div class="flash" id="flash"></div>
+  <div class="clouds" id="clouds"></div>
+
+  <div class="tap-zone" id="tapZone">
+    <div class="check" id="check">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="count" id="count">0</div>
+    <div class="label">puffs today</div>
+    <div class="target-info">target: <span id="target">--</span></div>
+    <!-- Small vape icon -->
+    <svg class="vape-icon" id="vapeIcon" width="28" height="80" viewBox="0 0 28 80" fill="none">
+      <rect class="v-body" x="6" y="12" width="16" height="52" rx="4" fill="#1E2430"/>
+      <rect class="v-accent" x="6" y="32" width="16" height="2" rx="1" fill="#2DD4BF" opacity="0.6"/>
+      <rect x="9" y="0" width="10" height="12" rx="3" fill="#141820"/>
+      <rect x="8" y="62" width="12" height="10" rx="3" fill="#141820"/>
+      <circle cx="14" cy="67" r="2" fill="#2DD4BF" opacity="0.3"/>
+    </svg>
+  </div>
+
+  <button class="undo" id="undoBtn">Undo</button>
+  <div class="hint">tap anywhere to log</div>
+
+  <script>
+    const KEY = 'puffdown_data';
+    let undoTimer = null;
+
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; }
+    }
+    function save(d) {
+      try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {}
+    }
+    function today() {
+      return new Date().toISOString().split('T')[0];
+    }
+    function getTarget(data) {
+      if (!data || !data.startDate || !data.dailyPuffs) return null;
+      const elapsed = Math.floor((new Date(today()) - new Date(data.startDate)) / 86400000);
+      return Math.max(Math.round(data.dailyPuffs - (10 * (elapsed + 1) / 45)), 1);
+    }
+
+    function getCount() {
+      const d = load();
+      return (d && d.puffLogs && d.puffLogs[today()]) || 0;
+    }
+
+    function render() {
+      const d = load();
+      const c = getCount();
+      const t = getTarget(d);
+      document.getElementById('count').textContent = c;
+      document.getElementById('target').textContent = t !== null ? t : '--';
+      if (t !== null && c > t) {
+        document.body.classList.add('over');
+      } else {
+        document.body.classList.remove('over');
+      }
+    }
+
+    function logPuff() {
+      const d = load();
+      if (!d || !d.onboardingComplete) {
+        window.location.href = './index.html';
+        return;
+      }
+      const t = today();
+      if (!d.puffLogs) d.puffLogs = {};
+      d.puffLogs[t] = (d.puffLogs[t] || 0) + 1;
+      if (!d.startDate) d.startDate = t;
+      save(d);
+
+      // Visual feedback
+      const countEl = document.getElementById('count');
+      countEl.classList.add('bump');
+      setTimeout(() => countEl.classList.remove('bump'), 200);
+
+      const flash = document.getElementById('flash');
+      flash.classList.remove('go');
+      void flash.offsetWidth;
+      flash.classList.add('go');
+
+      const icon = document.getElementById('vapeIcon');
+      icon.classList.add('glow');
+      setTimeout(() => icon.classList.remove('glow'), 500);
+
+      spawnClouds();
+
+      // Haptic
+      if (navigator.vibrate) navigator.vibrate(25);
+
+      // Show undo briefly
+      showUndo();
+
+      render();
+    }
+
+    function spawnClouds() {
+      const container = document.getElementById('clouds');
+      for (let i = 0; i < 5; i++) {
+        const c = document.createElement('div');
+        c.className = 'cloud';
+        c.style.setProperty('--dx', (Math.random() * 30 - 15) + 'px');
+        c.style.animationDelay = (Math.random() * 0.15) + 's';
+        c.style.left = (Math.random() * 16 - 8) + 'px';
+        container.appendChild(c);
+        c.classList.add('puff');
+        setTimeout(() => c.remove(), 1000);
+      }
+    }
+
+    function showUndo() {
+      const btn = document.getElementById('undoBtn');
+      btn.classList.add('show');
+      clearTimeout(undoTimer);
+      undoTimer = setTimeout(() => btn.classList.remove('show'), 3000);
+    }
+
+    function undoPuff() {
+      const d = load();
+      if (!d || !d.puffLogs) return;
+      const t = today();
+      if (d.puffLogs[t] && d.puffLogs[t] > 0) {
+        d.puffLogs[t]--;
+        save(d);
+        render();
+        document.getElementById('undoBtn').classList.remove('show');
+        if (navigator.vibrate) navigator.vibrate(15);
+      }
+    }
+
+    // --- Init ---
+    render();
+
+    // Auto-log on open (the whole point!)
+    logPuff();
+
+    // Show checkmark after auto-log
+    setTimeout(() => document.getElementById('check').classList.add('show'), 100);
+    setTimeout(() => document.getElementById('check').classList.remove('show'), 1500);
+
+    // Tap anywhere to log more
+    document.getElementById('tapZone').addEventListener('click', function(e) {
+      if (e.target.closest('.open-app')) return;
+      logPuff();
+    });
+
+    // Undo handler
+    document.getElementById('undoBtn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      undoPuff();
+    });
+  </script>
+</body>
+</html>

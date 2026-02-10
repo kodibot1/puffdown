@@ -29,11 +29,24 @@ A vaping cessation PWA (Progressive Web App) that helps users quit vaping throug
 | File | Purpose |
 |------|---------|
 | `index.html` | Main app — onboarding, dashboard, timeline, learn tabs |
-| `widget.html` | Quick Log — standalone vape pen tap-to-log widget |
+| `quicklog.html` | One-tap puff logger — auto-logs on open, add to home screen as widget |
+| `widget.html` | Interactive vape pen tap-to-log page |
 | `sw.js` | Service worker — caching, notifications, puff logging from notification tap |
 | `manifest.json` | PWA manifest — app name, icons, shortcuts |
 | `generate-icons.js` | Dev script to generate icon sizes from source |
 | `generate-vape-icon.js` | Dev script to generate vape-themed icons |
+
+## Adding to Your Phone
+
+1. Open your PuffDown site in your phone's browser
+2. **Install the main app**:
+   - **iOS**: Tap Share (box with arrow) → "Add to Home Screen"
+   - **Android**: Tap the three-dot menu → "Add to Home Screen" or "Install App"
+3. **Add the Quick Log widget** (one-tap puff logging, no app opening):
+   - Navigate to `quicklog.html` (e.g. `yoursite.com/quicklog.html`)
+   - **iOS**: Tap Share → "Add to Home Screen" → name it "Puff" or whatever you want
+   - **Android**: Tap menu → "Add to Home Screen"
+   - Now tapping that icon instantly logs a puff — no second tap needed
 
 ## Do Not Change
 

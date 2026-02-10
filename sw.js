@@ -1,8 +1,9 @@
-const CACHE_NAME = 'puffdown-v7';
+const CACHE_NAME = 'puffdown-v8';
 const ASSETS = [
   './',
   './index.html',
   './widget.html',
+  './quicklog.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
