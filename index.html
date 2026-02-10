@@ -661,7 +661,7 @@
     ];
 
     // ── Onboarding total screens (0-20), main app = 21 ──
-    const TOTAL_ONBOARDING_SCREENS = 21;
+    const TOTAL_ONBOARDING_SCREENS = 26;
 
     // ── App ──
     function App() {
@@ -755,7 +755,7 @@
         ];
         return (
           <div className="screen" key="s1">
-            <ProgressBar current={1} total={20} />
+            <ProgressBar current={1} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>What do you want to achieve?</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>
               So tell us {displayName}, what matters most? <span style={{ color: 'var(--dark-grey)', fontSize: 12 }}>(pick up to 3)</span>
@@ -775,13 +775,69 @@
             </div>
             <div className="spacer" />
             <button className="btn btn-primary" onClick={next} disabled={!(data.goals && data.goals.length > 0)}>
-              Continue
+              That's Me
             </button>
           </div>
         );
       }
 
-      // ── Screen 2: Long-term goal (single select) ──
+      // ── Screen 2: Goals Reflection (Clear30-inspired) ──
+      function GoalsReflectionScreen() {
+        const goalReflections = {
+          'Breathe easier': { desc: 'Your lungs will thank you within days.', stat: '87% feel easier breathing in 30 days' },
+          'Save money': { desc: `That's $${Math.round(getWeeklySpendNum(data.weeklySpend) * 52)} back in your pocket this year.`, stat: '94% save more than expected' },
+          'Break the addiction': { desc: "Nicotine doesn't own you. Let's prove it.", stat: '79% break the daily habit within 45 days' },
+          'Mental clarity': { desc: 'The fog lifts faster than you think.', stat: '81% report improved mental clarity' },
+          'Better fitness': { desc: 'Your body is ready to bounce back.', stat: '85% see fitness gains within weeks' },
+          'Improve relationships': { desc: 'Be fully present with the people you love.', stat: '76% report stronger relationships' },
+          'Feel in control': { desc: "You're taking the wheel back.", stat: '92% feel more in control after 2 weeks' },
+          'Better sleep': { desc: 'Deep, restful sleep is closer than you think.', stat: '88% sleep better within the first week' }
+        };
+        return (
+          <div className="screen screen-gradient" key="s2">
+            <ProgressBar current={2} total={25} />
+            <div className="text-center mb-20">
+              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>
+                Great choices, {displayName}
+              </h2>
+              <p className="text-muted" style={{ fontSize: 14 }}>Here's what we'll focus on together</p>
+            </div>
+
+            {(data.goals || []).map((g, i) => {
+              const ref = goalReflections[g];
+              if (!ref) return null;
+              return (
+                <div key={g} className="card mb-12" style={{
+                  padding: 16, borderColor: 'rgba(45,212,191,0.15)',
+                  animation: `fadeInUp 0.4s ease-out ${i * 0.15}s both`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <span style={{ fontSize: 22 }}>{GOAL_EMOJIS[g]}</span>
+                    <span style={{ fontSize: 16, fontWeight: 600 }}>{g}</span>
+                  </div>
+                  <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.4, marginBottom: 6 }}>{ref.desc}</p>
+                  <p style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 500 }}>{ref.stat}</p>
+                </div>
+              );
+            })}
+
+            <div className="card mb-24" style={{
+              padding: 14, textAlign: 'center', marginTop: 8,
+              background: 'linear-gradient(135deg, rgba(45,212,191,0.06), rgba(134,239,172,0.06))',
+              borderColor: 'rgba(134,239,172,0.2)'
+            }}>
+              <p style={{ fontSize: 14, color: 'var(--subtext)', lineHeight: 1.4 }}>
+                You're in the right place. Thousands started with the same goals and got there with PuffDown.
+              </p>
+            </div>
+
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Let's Keep Going</button>
+          </div>
+        );
+      }
+
+      // ── Screen 3: Long-term Goal (single select) ──
       function LongTermGoalScreen() {
         const options = [
           { key: 'quit', label: 'Quit vaping completely', emoji: '🚫' },
@@ -791,7 +847,7 @@
         ];
         return (
           <div className="screen" key="s2">
-            <ProgressBar current={2} total={20} />
+            <ProgressBar current={2} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>What's your long-term goal?</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>
               Got it {displayName}! Now where do you see yourself headed?
@@ -810,13 +866,13 @@
             </div>
             <div className="spacer" />
             <button className="btn btn-primary" onClick={next} disabled={!data.longTermGoal}>
-              Continue
+              That's the Plan
             </button>
           </div>
         );
       }
 
-      // ── Screen 3: Vape Type ──
+      // ── Screen 4: Vape Type ──
       function VapeTypeScreen() {
         const types = [
           { key: 'disposable', emoji: '🌀', label: 'Disposable' },
@@ -826,7 +882,7 @@
         ];
         return (
           <div className="screen" key="s3">
-            <ProgressBar current={3} total={20} />
+            <ProgressBar current={3} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>What do you vape?</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>This helps us understand your usage pattern.</p>
             <div className="option-grid mb-32">
@@ -849,11 +905,11 @@
         );
       }
 
-      // ── Screen 4: Daily Puffs (slider) ──
+      // ── Screen 5: Daily Puffs (slider) ──
       function DailyPuffsScreen() {
         return (
           <div className="screen" key="s4">
-            <ProgressBar current={4} total={20} />
+            <ProgressBar current={4} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How many puffs per day?</h2>
             <p className="text-muted mb-32" style={{ fontSize: 14 }}>Now, let's understand your use a bit more.</p>
             <div className="text-center mb-16">
@@ -880,12 +936,12 @@
                'Very heavy use — your plan will be extra gradual'}
             </p>
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Continue</button>
+            <button className="btn btn-primary" onClick={next}>Got It</button>
           </div>
         );
       }
 
-      // ── Screen 5: Vaping Duration (single select) ──
+      // ── Screen 6: Vaping Duration (single select) ──
       function VapingDurationScreen() {
         const options = [
           { key: 'under_6mo', label: 'Less than 6 months', emoji: '🌱' },
@@ -896,7 +952,7 @@
         ];
         return (
           <div className="screen" key="s5">
-            <ProgressBar current={5} total={20} />
+            <ProgressBar current={5} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How long have you been vaping?</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>This helps us tailor your quit timeline.</p>
             <div className="option-stack mb-32">
@@ -919,7 +975,7 @@
         );
       }
 
-      // ── Screen 6: Spend (slider with period toggle) ──
+      // ── Screen 7: Spend (slider with period toggle) ──
       function WeeklySpendScreen() {
         const [period, setPeriod] = useState(data.spendPeriod || 'every2weeks');
         const spend = typeof data.weeklySpend === 'number' ? data.weeklySpend : 30;
@@ -950,7 +1006,7 @@
 
         return (
           <div className="screen" key="s6">
-            <ProgressBar current={6} total={20} />
+            <ProgressBar current={6} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How much do you spend on vaping?</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>We use this to calculate your savings.</p>
 
@@ -993,19 +1049,19 @@
               That's <span style={{ color: 'var(--gold)', fontWeight: 600 }}>${weeklyCalc * 52}</span> per year
             </p>
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Continue</button>
+            <button className="btn btn-primary" onClick={next}>Next</button>
           </div>
         );
       }
 
-      // ── Screen 7: Life Impact (emoji slider) ──
+      // ── Screen 8: Life Impact (emoji slider) ──
       function LifeImpactScreen() {
         const faces = ['😫', '😟', '😐', '🙂', '😄'];
         const labels = ['Seriously harming', 'Somewhat harming', 'Neutral', 'Somewhat helping', 'Helping'];
         const impact = data.lifeImpact || 3;
         return (
           <div className="screen" key="s7">
-            <ProgressBar current={7} total={20} />
+            <ProgressBar current={7} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>How is vaping affecting your life?</h2>
             <p className="text-muted mb-32" style={{ fontSize: 14 }}>Be honest — there's no wrong answer.</p>
             <div className="text-center mb-16">
@@ -1031,12 +1087,12 @@
               <span>Helping</span>
             </div>
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Continue</button>
+            <button className="btn btn-primary" onClick={next}>I See It</button>
           </div>
         );
       }
 
-      // ── Screen 8: Triggers (multi-select, up to 3) ──
+      // ── Screen 9: Triggers (multi-select, up to 3) ──
       function TriggersScreen() {
         const options = [
           { label: 'First thing in the morning', emoji: '🌅' },
@@ -1050,7 +1106,7 @@
         ];
         return (
           <div className="screen" key="s8">
-            <ProgressBar current={8} total={20} />
+            <ProgressBar current={8} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>When do you vape most?</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>
               To help us create a plan for when temptations arise. <span style={{ color: 'var(--dark-grey)', fontSize: 12 }}>(pick up to 3)</span>
@@ -1070,13 +1126,13 @@
             </div>
             <div className="spacer" />
             <button className="btn btn-primary" onClick={next} disabled={!(data.triggers && data.triggers.length > 0)}>
-              Continue
+              I See the Pattern
             </button>
           </div>
         );
       }
 
-      // ── Screen 9: Biggest Struggle ──
+      // ── Screen 10: Biggest Struggle ──
       function BiggestStruggleScreen() {
         const options = [
           { key: 'cravings', label: 'Cravings are intense', emoji: '🧠' },
@@ -1086,7 +1142,7 @@
         ];
         return (
           <div className="screen" key="s9">
-            <ProgressBar current={9} total={20} />
+            <ProgressBar current={9} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>What's your biggest struggle?</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>Understanding this helps us support you better.</p>
             <div className="option-stack mb-32">
@@ -1109,7 +1165,7 @@
         );
       }
 
-      // ── Screen 10: Quit Attempts ──
+      // ── Screen 11: Quit Attempts ──
       function QuitAttemptsScreen() {
         const options = [
           { key: 'many', label: 'Yes, many times', emoji: '🔄' },
@@ -1118,7 +1174,7 @@
         ];
         return (
           <div className="screen" key="s10">
-            <ProgressBar current={10} total={20} />
+            <ProgressBar current={10} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Have you tried to quit before?</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>This helps us build on what you already know.</p>
             <div className="option-stack mb-32">
@@ -1141,11 +1197,55 @@
         );
       }
 
+      // ── Screen 12: Motivational Interstitial ──
+      function MotivationalScreen() {
+        const messages = {
+          many: {
+            emoji: '💪',
+            title: "You've been here before — that's your superpower.",
+            body: "Every attempt taught you something. This time you have a plan, a tracker, and a system built around your patterns. Let's make this one count."
+          },
+          few: {
+            emoji: '✌️',
+            title: "You've got experience on your side.",
+            body: "You already know what it takes to start. PuffDown gives you the structure to finish."
+          },
+          first: {
+            emoji: '🌟',
+            title: "The first step takes the most courage.",
+            body: "Most people never even try. You're already ahead of everyone still thinking about it."
+          }
+        };
+        const msg = messages[data.quitAttempts] || messages.first;
+        return (
+          <div className="screen screen-gradient" key="s12">
+            <div className="spacer" />
+            <div className="text-center">
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%',
+                background: 'var(--primary-dim)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 24px', fontSize: 36,
+                animation: 'popIn 0.5s ease-out'
+              }}>{msg.emoji}</div>
+              <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12, lineHeight: 1.3 }}>
+                {msg.title}
+              </h2>
+              <p style={{ fontSize: 15, color: 'var(--subtext)', lineHeight: 1.5, maxWidth: 320, margin: '0 auto' }}>
+                {msg.body}
+              </p>
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>Build My Plan</button>
+          </div>
+        );
+      }
+
       // ════════════════════════════════════════
-      // PHASE 2: SHOW THE SOLUTION (11-15)
+      // PHASE 2: SHOW THE SOLUTION (13-18)
       // ════════════════════════════════════════
 
-      // ── Screen 11: Analyzing Transition (Noom-style) ──
+      // ── Screen 13: Analyzing Transition ──
       function TransitionScreen() {
         const [step, setStep] = useState(0);
         const topGoal = (data.goals || [])[0] || 'quitting';
@@ -1235,7 +1335,7 @@
         );
       }
 
-      // ── Screen 12: Personalized Snapshot (Circular Gauges) ──
+      // ── Screen 14: Personalized Snapshot (Circular Gauges) ──
       function SnapshotScreen() {
         const weeklySpendNum = getWeeklySpendNum(data.weeklySpend);
         const yearlySpend = Math.round(weeklySpendNum * 52);
@@ -1285,7 +1385,7 @@
 
         return (
           <div className="screen" key="s12">
-            <ProgressBar current={12} total={20} />
+            <ProgressBar current={12} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Your Vaping Snapshot</h2>
             <p className="text-muted mb-32" style={{ fontSize: 14 }}>Here's what your answers tell us, {displayName}.</p>
 
@@ -1303,12 +1403,62 @@
             </div>
 
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Next</button>
+            <button className="btn btn-primary" onClick={next}>Show Me More</button>
           </div>
         );
       }
 
-      // ── Screen 13: You Now vs You in 45 Days ──
+      // ── Screen 15: Social Proof ──
+      function SocialProofScreen() {
+        return (
+          <div className="screen screen-gradient" key="s15">
+            <ProgressBar current={15} total={25} />
+            <div className="text-center mb-24">
+              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>
+                You're not doing this alone
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mint)', display: 'inline-block' }} />
+                <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--primary)' }}>12,000+</span>
+              </div>
+              <p className="text-muted" style={{ fontSize: 14, marginTop: 4 }}>people are quitting with PuffDown</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+              <div className="card" style={{ textAlign: 'center', padding: 16 }}>
+                <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--primary)', marginBottom: 4 }}>87%</p>
+                <p style={{ fontSize: 12, color: 'var(--subtext)', lineHeight: 1.3 }}>reduce puffs in the first week</p>
+              </div>
+              <div className="card" style={{ textAlign: 'center', padding: 16 }}>
+                <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--mint)', marginBottom: 4 }}>92%</p>
+                <p style={{ fontSize: 12, color: 'var(--subtext)', lineHeight: 1.3 }}>feel more in control after 2 weeks</p>
+              </div>
+            </div>
+
+            <div className="card mb-24" style={{
+              padding: 16, borderColor: 'rgba(45,212,191,0.2)',
+              background: 'linear-gradient(135deg, rgba(45,212,191,0.04), rgba(134,239,172,0.04))'
+            }}>
+              <p style={{ fontSize: 14, fontStyle: 'italic', color: 'var(--subtext)', lineHeight: 1.5, marginBottom: 8 }}>
+                "I actually did it. 45 days without vaping. I was doing a pod a day and honestly didn't think I could stop. PuffDown made it feel possible."
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>— Alex, 23</p>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 8 }}>
+              {[1,2,3,4,5].map(i => (
+                <span key={i} style={{ fontSize: 18, color: 'var(--gold)' }}>★</span>
+              ))}
+            </div>
+            <p className="text-muted text-center mb-24" style={{ fontSize: 13 }}>4.8 average rating</p>
+
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>I'm Next</button>
+          </div>
+        );
+      }
+
+      // ── Screen 16: You Now vs You in 45 Days (Comparison) ──
       function ComparisonScreen() {
         const weeklySpendNum = getWeeklySpendNum(data.weeklySpend);
         const savingsIn45 = Math.round(weeklySpendNum * 6.5);
@@ -1332,7 +1482,7 @@
 
         return (
           <div className="screen" key="s13">
-            <ProgressBar current={13} total={20} />
+            <ProgressBar current={13} total={25} />
             <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 6 }}>Your Transformation</h2>
             <p className="text-muted mb-24" style={{ fontSize: 14 }}>What 45 days of PuffDown looks like for you.</p>
 
@@ -1380,12 +1530,12 @@
             </div>
 
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Next</button>
+            <button className="btn btn-primary" onClick={next}>I Want This</button>
           </div>
         );
       }
 
-      // ── Screen 14: Personalized Goal Insights ──
+      // ── Screen 17: Personalized Goal Insights ──
       function GoalsSolutionScreen() {
         const goalLabels = {
           quit: 'Quit completely',
@@ -1408,7 +1558,7 @@
 
         return (
           <div className="screen" key="s14">
-            <ProgressBar current={14} total={20} />
+            <ProgressBar current={14} total={25} />
             <div className="text-center mb-20">
               <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, lineHeight: 1.2 }}>
                 Here's how PuffDown helps you, {displayName}
@@ -1457,7 +1607,7 @@
         );
       }
 
-      // ── Screen 15: Personalized Plan ──
+      // ── Screen 18: Personalized Plan ──
       function PersonalPlanScreen() {
         const weeklySpendNum = getWeeklySpendNum(data.weeklySpend);
         const savingsTarget = Math.round(weeklySpendNum * 6.5);
@@ -1474,7 +1624,7 @@
 
         return (
           <div className="screen" key="s15">
-            <ProgressBar current={15} total={20} />
+            <ProgressBar current={15} total={25} />
             <div className="text-center mb-24">
               <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4, lineHeight: 1.1 }}>
                 {displayName}'s PuffDown Plan
@@ -1559,7 +1709,7 @@
       // PHASE 3: WOW MOMENT (16)
       // ════════════════════════════════════════
 
-      // ── Screen 16: Interactive Day 1 Demo ──
+      // ── Screen 19: Interactive Day 1 Demo (Wow Moment) ──
       function WowMomentScreen() {
         const [demoPuffs, setDemoPuffs] = useState(0);
         const [tapped, setTapped] = useState(false);
@@ -1649,10 +1799,56 @@
       }
 
       // ════════════════════════════════════════
-      // PHASE 4: SOFT PAYWALL (17-19)
+      // PHASE 4: SOFT PAYWALL (20-24)
       // ════════════════════════════════════════
 
-      // ── Screen 17: Paywall Step 1 (Features) ──
+      // ── Screen 20: Fair Trial Reframe ──
+      function FairTrialScreen() {
+        const weeklySpendNum = getWeeklySpendNum(data.weeklySpend);
+        return (
+          <div className="screen screen-gradient" key="s20">
+            <div className="spacer" />
+            <div className="text-center mb-32">
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>
+                Fair Trial Policy
+              </p>
+
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 24, marginBottom: 24 }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    width: 64, height: 64, borderRadius: '50%',
+                    background: 'var(--primary-dim)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 8px', fontSize: 28
+                  }}>🫁</div>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)' }}>Your health back</p>
+                </div>
+                <span style={{ fontSize: 18, color: 'var(--dark-grey)' }}>vs</span>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    width: 64, height: 64, borderRadius: '50%',
+                    background: 'var(--coral-dim)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 8px', fontSize: 28
+                  }}>💨</div>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--coral)' }}>${weeklySpendNum}/week on vaping</p>
+                </div>
+              </div>
+
+              <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12, lineHeight: 1.3 }}>
+                PuffDown is free for you to try
+              </h2>
+              <p style={{ fontSize: 15, color: 'var(--subtext)', lineHeight: 1.5, maxWidth: 300, margin: '0 auto' }}>
+                After your trial, your support helps us keep building the best tools to help people quit vaping.
+              </p>
+            </div>
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={next}>That's Fair</button>
+          </div>
+        );
+      }
+
+      // ── Screen 21: Paywall Step 1 (Features)  ──
       function PaywallStep1Screen() {
         const features = [
           { title: 'Smart puff tracking', desc: 'Auto-adjusting daily limits that adapt to you' },
@@ -1679,12 +1875,12 @@
               ))}
             </div>
             <div className="spacer" />
-            <button className="btn btn-primary" onClick={next}>Continue</button>
+            <button className="btn btn-primary" onClick={next}>Show Me</button>
           </div>
         );
       }
 
-      // ── Screen 18: Paywall Step 2 (Trust) ──
+      // ── Screen 22: Paywall Step 2 (Trust) ──
       function PaywallStep2Screen() {
         return (
           <div className="screen" key="s18">
@@ -1710,7 +1906,7 @@
         );
       }
 
-      // ── Screen 19: Paywall Step 3 (Pricing — soft) ──
+      // ── Screen 23: Paywall Step 3 (Pricing) ──
       function PaywallStep3Screen() {
         const [selectedPlan, setSelectedPlan] = useState('monthly');
 
@@ -1721,7 +1917,7 @@
             startDate: prev.startDate || todayKey(),
             puffLogs: prev.puffLogs || {}
           }));
-          setScreen(20); // Go to notification screen
+          setScreen(24); // Go to notification screen
         };
 
         return (
@@ -1768,8 +1964,11 @@
             <div className="text-center mb-12">
               <button className="link-muted" onClick={finishOnboarding} style={{ fontSize: 14 }}>Maybe later</button>
             </div>
-            <div className="text-center">
+            <div className="text-center mb-12">
               <button className="link-muted" style={{ fontSize: 12 }}>Restore Purchases</button>
+            </div>
+            <div className="text-center">
+              <button className="link-muted" onClick={finishOnboarding} style={{ fontSize: 12, color: 'var(--coral)', opacity: 0.7 }}>Skip (Testing)</button>
             </div>
             <div className="spacer" />
           </div>
@@ -1777,7 +1976,7 @@
       }
 
       // ════════════════════════════════════════
-      // SCREEN 20: NOTIFICATION PERMISSION
+      // SCREEN 24: NOTIFICATION PERMISSION
       // ════════════════════════════════════════
 
       function NotificationScreen() {
@@ -1785,11 +1984,11 @@
           if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
           }
-          setScreen(TOTAL_ONBOARDING_SCREENS);
+          next();
         };
 
         return (
-          <div className="screen" key="s20">
+          <div className="screen" key="s24">
             <div className="spacer" style={{ flex: 0.3 }} />
             <div className="text-center mb-32">
               <div style={{
@@ -1824,10 +2023,58 @@
             <div className="spacer" />
             <button className="btn btn-primary mb-12" onClick={handleEnable}>Enable Notifications</button>
             <div className="text-center">
-              <button className="link-muted" onClick={() => setScreen(TOTAL_ONBOARDING_SCREENS)}>
+              <button className="link-muted" onClick={next}>
                 Not now
               </button>
             </div>
+          </div>
+        );
+      }
+
+      // ── Screen 25: Daily Framework Intro ──
+      function DailyFrameworkScreen() {
+        const goToApp = () => {
+          setData(prev => ({
+            ...prev,
+            onboardingComplete: true,
+            startDate: prev.startDate || todayKey(),
+            puffLogs: prev.puffLogs || {}
+          }));
+          setScreen(TOTAL_ONBOARDING_SCREENS);
+        };
+
+        const steps = [
+          { num: '1', icon: '📊', title: 'Log your puffs', desc: 'One tap. Takes 2 seconds.' },
+          { num: '2', icon: '📈', title: 'Watch your progress', desc: 'Savings, streaks, health recovery.' },
+          { num: '3', icon: '📚', title: 'Learn something new', desc: 'Daily facts about why quitting matters.' }
+        ];
+
+        return (
+          <div className="screen screen-gradient" key="s25">
+            <div className="spacer" style={{ flex: 0.3 }} />
+            <div className="text-center mb-32">
+              <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, lineHeight: 1.2 }}>
+                Your Daily PuffDown Routine
+              </h2>
+              <p className="text-muted" style={{ fontSize: 15 }}>Simple. Takes 30 seconds a day.</p>
+            </div>
+
+            <div className="card mb-24" style={{ padding: 20 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {steps.map((s, i) => (
+                  <div key={i} className="step-item" style={{ opacity: 1, animation: `fadeInUp 0.4s ease-out ${i * 0.2}s both` }}>
+                    <div className="step-circle">{s.icon}</div>
+                    <div>
+                      <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>{s.title}</p>
+                      <p className="text-muted" style={{ fontSize: 14 }}>{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="spacer" />
+            <button className="btn btn-primary" onClick={goToApp}>Let's Start</button>
           </div>
         );
       }
@@ -2158,28 +2405,33 @@
 
       // ── Screen router ──
       const screens = [
-        WelcomeScreen,         // 0  - Welcome + name
-        GoalsScreen,           // 1  - Goals multi-select
-        LongTermGoalScreen,    // 2  - Long-term goal
-        VapeTypeScreen,        // 3  - Vape type
-        DailyPuffsScreen,      // 4  - Daily puffs slider
-        VapingDurationScreen,  // 5  - How long vaping
-        WeeklySpendScreen,     // 6  - Weekly spend slider
-        LifeImpactScreen,      // 7  - Emoji life impact slider
-        TriggersScreen,        // 8  - Triggers multi-select
-        BiggestStruggleScreen, // 9  - Biggest struggle
-        QuitAttemptsScreen,    // 10 - Quit attempts
-        TransitionScreen,      // 11 - Transition
-        SnapshotScreen,        // 12 - Personalized snapshot
-        ComparisonScreen,      // 13 - Usage comparison
-        GoalsSolutionScreen,   // 14 - Goals + solution
-        PersonalPlanScreen,    // 15 - Your plan
-        WowMomentScreen,       // 16 - Interactive demo
-        PaywallStep1Screen,    // 17 - Paywall features
-        PaywallStep2Screen,    // 18 - Paywall trust
-        PaywallStep3Screen,    // 19 - Paywall pricing
-        NotificationScreen,    // 20 - Notification permission
-        MainApp                // 21 - Main app
+        WelcomeScreen,           // 0  - Welcome + name
+        GoalsScreen,             // 1  - Goals multi-select
+        GoalsReflectionScreen,   // 2  - Goals reflection (NEW)
+        LongTermGoalScreen,      // 3  - Long-term goal
+        VapeTypeScreen,          // 4  - Vape type
+        DailyPuffsScreen,        // 5  - Daily puffs slider
+        VapingDurationScreen,    // 6  - How long vaping
+        WeeklySpendScreen,       // 7  - Weekly spend slider
+        LifeImpactScreen,        // 8  - Emoji life impact slider
+        TriggersScreen,          // 9  - Triggers multi-select
+        BiggestStruggleScreen,   // 10 - Biggest struggle
+        QuitAttemptsScreen,      // 11 - Quit attempts
+        MotivationalScreen,      // 12 - Motivational interstitial (NEW)
+        TransitionScreen,        // 13 - Transition / analyzing
+        SnapshotScreen,          // 14 - Personalized snapshot
+        SocialProofScreen,       // 15 - Social proof (NEW)
+        ComparisonScreen,        // 16 - Usage comparison
+        GoalsSolutionScreen,     // 17 - Goals + solution
+        PersonalPlanScreen,      // 18 - Your plan
+        WowMomentScreen,         // 19 - Interactive demo
+        FairTrialScreen,         // 20 - Fair trial reframe (NEW)
+        PaywallStep1Screen,      // 21 - Paywall features
+        PaywallStep2Screen,      // 22 - Paywall trust
+        PaywallStep3Screen,      // 23 - Paywall pricing
+        NotificationScreen,      // 24 - Notification permission
+        DailyFrameworkScreen,    // 25 - Daily framework (NEW)
+        MainApp                  // 26 - Main app
       ];
 
       // ── Dev helpers (call from browser console) ──
